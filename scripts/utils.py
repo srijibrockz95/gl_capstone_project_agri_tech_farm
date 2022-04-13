@@ -17,13 +17,15 @@ class AWSIoTThing():
     """
     count = 0
 
-    def __init__(self, THING_NAME_PREFIX, THING_TYPE_NAME):
+    def __init__(self, THING_NAME_PREFIX, THING_TYPE_NAME, group_number, THING_GROUP_NAME_PREFIX):
         self.thing_type_name = THING_TYPE_NAME
         self.thing_name_prefix = THING_NAME_PREFIX
-        self.name = self.thing_name_prefix+"_"+str(AWSIoTThing.count)
+        self.thing_group_count = group_number
+        self.thing_group_name_prefix = THING_GROUP_NAME_PREFIX
+        self.group_name = self.thing_group_name_prefix + "_" + str(self.thing_group_count)
+        self.name = self.thing_name_prefix + "_" + str(AWSIoTThing.count)
         self.id = AWSIoTThing.count
         AWSIoTThing.count += 1
-
 
 def aws_iot_core_create_policy(detail=True):
     """"
@@ -40,7 +42,7 @@ def aws_iot_core_create_policy(detail=True):
     logger_aws_iot_core.info(f"\tStep 0: Checking policies ...")
     policies = aws_iot_core_get_all_policies()
     policies_count = len(policies["policyNames"])
-    if(policies_count == 0):
+    if (policies_count == 0):
         logger_aws_iot_core.info(
             f"\t\tThere are no policiy registered. Creating a new one")
         f = open(PATH_TO_POLICY, "r")
@@ -74,22 +76,27 @@ def create_provision_file():
     """
 
     # Create things
-    things = [None]*THING_COUNT
+    things = [None] * THING_COUNT
+    group_number = 1
     for i in range(THING_COUNT):
-        things[i] = AWSIoTThing(THING_NAME_PREFIX, THING_TYPE_NAME)
+        if group_number <= THING_GROUP_COUNT:
+            print(((i - group_number) / group_number))
+            if ((i - group_number) / group_number) == 3:
+                group_number += 1
+        things[i] = AWSIoTThing(THING_NAME_PREFIX, THING_TYPE_NAME, group_number, THING_GROUP_NAME_PREFIX)
 
     # Clear the provisioning json file by simply opening for writing
     bulk_provision_file = PATH_TO_PROVISION
     f = open(bulk_provision_file, "w")
     f.close()
 
-    # Reopen the provision data file to attend lines
+    # Reopen the provision data file to append lines
     f = open(bulk_provision_file, "a")
 
     # Loop through things and create a provision data for each thing
     for thing in things:
         message = {"ThingName": thing.name,
-                   "ThingTypeName": thing.thing_type_name, "ThingId": thing.id}
+                   "ThingTypeName": thing.thing_type_name, "ThingId": thing.id, "GroupName": thing.group_name}
         json.dump(message, f)
         f.write("\n")
 
@@ -103,12 +110,12 @@ def aws_list_roles():
     response = client.list_roles()
     logger_aws_iot_core.info('Listing iam roles ...')
     # print(response.keys()) #prints keys
-    #print (json.dumps(response['Roles'], indent=2, default=str))
+    # print (json.dumps(response['Roles'], indent=2, default=str))
     for Role in response['Roles']:
         # print(type(Role),Role)
-        logger_aws_iot_core.info('RoleName: '+Role['RoleName'])
-        logger_aws_iot_core.info('RoleArn: '+Role['Arn']+"\n")
-        #print (json.dumps(Role, indent=2, default=str))
+        logger_aws_iot_core.info('RoleName: ' + Role['RoleName'])
+        logger_aws_iot_core.info('RoleArn: ' + Role['Arn'] + "\n")
+        # print (json.dumps(Role, indent=2, default=str))
 
 
 def aws_iot_core_create_bulk_things():
@@ -127,12 +134,12 @@ def aws_iot_core_create_bulk_things():
     logger_aws_iot_core.info(f"\tChecking thingType")
     thingType_name = "soil_sensor"
     thingTypes = aws_iot_core_get_all_thing_types()
-    if(thingType_name in thingTypes["thingTypeNames"]):
+    if (thingType_name in thingTypes["thingTypeNames"]):
         logger_aws_iot_core.info(
             f"\t\tThing type Name {thingType_name} is already present no need to crete new one.")
     else:
         iot_client.create_thing_type(thingTypeName='soil_sensor', thingTypeProperties={
-                                     'thingTypeDescription': 'Generic soil_sensor thing type'})
+            'thingTypeDescription': 'Generic soil_sensor thing type'})
 
     # Step 1: Start things regisration task
     response = iot_client.start_thing_registration_task(templateBody=f.read(
@@ -140,17 +147,17 @@ def aws_iot_core_create_bulk_things():
     taskId = response['taskId']
 
     # Step 2: describe_thing_registration_task
-    while(1):
+    while (1):
         response = iot_client.describe_thing_registration_task(taskId=taskId)
         response_status = response['status']
-        if(response_status == "Completed"):
+        if (response_status == "Completed"):
             logger_aws_iot_core.info(
                 f"\t Status of the bulk registration task: {response['status']}")
             return True
-        if(response_status == "InProgress"):
+        if (response_status == "InProgress"):
             logger_aws_iot_core.info(
                 f"\t Status of the bulk registration task: {response['status']}")
-        if(response_status == "Failed"):
+        if (response_status == "Failed"):
             logger_aws_iot_core.error(
                 f"\t Status of the bulk registration task: {response['status']}")
             return False
@@ -190,7 +197,7 @@ def aws_s3_reset():
         bucket.delete()
         logger_aws_iot_core.info(f"Deleting the bucket {bucket_name}")
 
-    #log_format_aws_iot_core.info(f"Deleting the buyket {bucket['Name']}")
+    # log_format_aws_iot_core.info(f"Deleting the buyket {bucket['Name']}")
 
 
 def aws_iot_core_get_all_policies(detail=False):
@@ -213,19 +220,19 @@ def aws_iot_core_get_all_policies(detail=False):
     page_count = 0
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info("aws-iot-core: Getting policies ...")
 
     # Send the first request
     response = iot_client.list_policies(pageSize=pageSize)
 
     # Count the number of the things until no more things are present on the search pages
-    while(1):
+    while (1):
         # Increment policy count
         policies_count = policies_count + len(response['policies'])
-        if(detail):
+        if (detail):
             logger_aws_iot_core.info(
-                "aws-iot-core: " + f"\t\t{len(response['policies'])} policies are found on the {page_count+1}. page. Checking the next page ...")
+                "aws-iot-core: " + f"\t\t{len(response['policies'])} policies are found on the {page_count + 1}. page. Checking the next page ...")
 
         # Append found policies to the lists
         for policy in response['policies']:
@@ -236,15 +243,15 @@ def aws_iot_core_get_all_policies(detail=False):
         page_count += 1
 
         # Check if nextMarker is present for next search pages
-        if("nextMarker" in response):
+        if ("nextMarker" in response):
             response = iot_client.list_policies(
                 pageSize=pageSize, Marker=response["nextMarker"])
         else:
             break
 
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(
-            "aws-iot-core: "+f"\t\tGetting policies is completed. In total {policy_count} policies are found.")
+            "aws-iot-core: " + f"\t\tGetting policies is completed. In total {policy_count} policies are found.")
     return {"policyArns": policyArns, "policyNames": policyNames}
 
 
@@ -265,14 +272,14 @@ def aws_iot_core_get_all_certificates(detail=False):
     page_count = 0
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info("aws-iot-core: Getting certificates ...")
 
     # Send the first request
     response = iot_client.list_certificates(pageSize=pageSize)
 
     # Count the number of the certificates until no more certificates are present on the search pages
-    while(1):
+    while (1):
         # Increment certificate count
         certificates_count = certificates_count + len(response['certificates'])
 
@@ -290,15 +297,15 @@ def aws_iot_core_get_all_certificates(detail=False):
         page_count += 1
 
         # Check if nextMarker is present for next search pages
-        if("nextMarker" in response):
+        if ("nextMarker" in response):
             response = iot_client.list_certificates(
                 pageSize=pageSize, marker=response["nextMarker"])
         else:
             break
 
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(
-            "aws-iot-core: "+f"\t\tGetting certificates is completed. In total {certificates_count} certificates are found.")
+            "aws-iot-core: " + f"\t\tGetting certificates is completed. In total {certificates_count} certificates are found.")
     return {"certificateArns": certificateArns, "certificateIds": certificateIds}
 
 
@@ -319,19 +326,19 @@ def aws_iot_core_get_all_things(detail=False):
     page_count = 0
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info("Getting things")
 
     # Send the first request
     response = iot_client.list_things(maxResults=pageSize)
 
     # Count the number of the things until no more things are present on the search pages
-    while(1):
+    while (1):
         # Increment thing count
         things_count = things_count + len(response['things'])
-        if(detail):
+        if (detail):
             logger_aws_iot_core.info(
-                f"\t{len(response['things'])} things are found on the {page_count+1}. page. Checking the next page ...")
+                f"\t{len(response['things'])} things are found on the {page_count + 1}. page. Checking the next page ...")
 
         # Append found things to the lists
         for thing in response['things']:
@@ -342,20 +349,19 @@ def aws_iot_core_get_all_things(detail=False):
         page_count += 1
 
         # Check if nextToken is present for next search pages
-        if("nextToken" in response):
+        if ("nextToken" in response):
             response = iot_client.list_things(
                 maxResults=pageSize, nextToken=response["nextToken"])
         else:
             break
 
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(
             f"\tGetting things is completed. In total {things_count} things are found.")
     return {"thingArns": thingArns, "thingNames": thingNames}
 
 
 def aws_iot_core_reset():
-
     # Delete all the registered things
     aws_iot_core_delete_all_things()
 
@@ -383,19 +389,19 @@ def aws_iot_core_get_all_thing_types(detail=False):
     page_count = 0
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info("Getting thing types")
 
     # Send the first request
     response = iot_client.list_thing_types(maxResults=pageSize)
 
     # Count the number of the things until no more things are present on the search pages
-    while(1):
+    while (1):
         # Increment thing count
         types_count = types_count + len(response['thingTypes'])
-        if(detail):
+        if (detail):
             logger_aws_iot_core.info(
-                f"\t{types_count} thingTypes are found on the {page_count+1}. page. Checking the next page ...")
+                f"\t{types_count} thingTypes are found on the {page_count + 1}. page. Checking the next page ...")
 
         # Append found thingTypes to the lists
         for thingType in response['thingTypes']:
@@ -406,13 +412,13 @@ def aws_iot_core_get_all_thing_types(detail=False):
         page_count += 1
 
         # Check if nextToken is present for next search pages
-        if("nextToken" in response):
+        if ("nextToken" in response):
             response = iot_client.list_thing_types(
                 maxResults=pageSize, nextToken=response["nextToken"])
         else:
             break
 
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(
             f"\tGetting thingTypes is completed. In total {types_count} thingTypes are found.")
     return {"thingTypeArns": thingTypeArns, "thingTypeNames": thingTypeNames}
@@ -434,7 +440,7 @@ def aws_iot_core_delete_all_policies():
     logger_aws_iot_core.info(f"\tStep 0: Checking policies ...")
     policies = aws_iot_core_get_all_policies()
     policies_count = len(policies["policyNames"])
-    if(policies_count == 0):
+    if (policies_count == 0):
         logger_aws_iot_core.info(
             f"\t\tThere are no policiy registered. Exiting")
         return 0
@@ -486,7 +492,7 @@ def aws_iot_core_create_certificates():
     # Create certificate and keys for things
     logger_aws_iot_core.info(
         f"\tStep 1: Creating the certificates for {len(things['thingNames'])} things based on configuration")
-    if(SET_CERT_UNIQUE):
+    if (SET_CERT_UNIQUE):
         for thing in things['thingNames']:
             # Create keys and certificates
             response = iot_client.create_keys_and_certificate(setAsActive=True)
@@ -502,17 +508,17 @@ def aws_iot_core_create_certificates():
                 f"\t\tCreating the certificate {certificateArn[:50]}...")
 
             # Storing the private key
-            f = open("../secure/keys/private/"+thing+".pem.key", "w")
+            f = open("../secure/keys/private/" + thing + ".pem.key", "w")
             f.write(key_private)
             f.close()
 
             # Storing the public key
-            f = open("../secure/keys/public/"+thing+".pem.key", "w")
+            f = open("../secure/keys/public/" + thing + ".pem.key", "w")
             f.write(key_public)
             f.close()
 
             # Storing the certificate
-            f = open("../secure/certificates/"+thing+".pem.crt", "w")
+            f = open("../secure/certificates/" + thing + ".pem.crt", "w")
             f.write(certificate)
             f.close()
     else:
@@ -531,17 +537,17 @@ def aws_iot_core_create_certificates():
         thing = "general"
 
         # Storing the private key
-        f = open("/secure/keys/private/"+thing+".pem.key", "w")
+        f = open("/secure/keys/private/" + thing + ".pem.key", "w")
         f.write(key_private)
         f.close()
 
         # Storing the public key
-        f = open("/secure/keys/public/"+thing+".pem.key", "w")
+        f = open("/secure/keys/public/" + thing + ".pem.key", "w")
         f.write(key_public)
         f.close()
 
         # Storing the certificate
-        f = open("/secure/certificates/"+thing+".pem.crt", "w")
+        f = open("/secure/certificates/" + thing + ".pem.crt", "w")
         f.write(certificate)
         f.close()
 
@@ -556,14 +562,14 @@ def aws_iot_core_delete_all_certificates(detail=True):
     iot_client = boto3.client('iot', IOT_CORE_REGION)
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(f"Deleting certificates")
 
     # Step 0: Get the certificates
     logger_aws_iot_core.info(f"\tStep 0: Getting certificates ...")
     certificates = aws_iot_core_get_all_certificates(detail=False)
     certificate_count = len(certificates["certificateIds"])
-    if(certificate_count == 0):
+    if (certificate_count == 0):
         logger_aws_iot_core.info(
             f"\t\tThere are no certificiates registered. Exiting")
         return 0
@@ -582,7 +588,7 @@ def aws_iot_core_delete_all_certificates(detail=True):
                 thingName=attached_thing, principal=certificateArn)
             logger_aws_iot_core.info(
                 f"\t\tDetaching thing {attached_thing} from the certificate certificate {certificateArn[:50]}...")
-        if(not attached_things):
+        if (not attached_things):
             logger_aws_iot_core.info(
                 f"\t\tThere isn't any associated principal for the certificate {certificateArn[:50]}...")
 
@@ -616,7 +622,7 @@ def aws_iot_core_get_all_principal_things(principal, detail=False):
     page_count = 0
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(
             "aws-iot-core: Getting things associated with the principal ...")
 
@@ -625,12 +631,12 @@ def aws_iot_core_get_all_principal_things(principal, detail=False):
         principal=principal, maxResults=pageSize)
 
     # Count the number of the things until no more things are present on the search pages
-    while(1):
+    while (1):
         # Increment thing count
         things_count = things_count + len(response['things'])
-        if(detail):
+        if (detail):
             logger_aws_iot_core.info(
-                "aws-iot-core: " + f"\t\t{len(response['things'])} things are found on the {page_count+1}. page. Checking the next page ...")
+                "aws-iot-core: " + f"\t\t{len(response['things'])} things are found on the {page_count + 1}. page. Checking the next page ...")
 
         # Append found things to the lists
         for thing in response['things']:
@@ -640,15 +646,15 @@ def aws_iot_core_get_all_principal_things(principal, detail=False):
         page_count += 1
 
         # Check if nextToken is present for next search pages
-        if("nextToken" in response):
+        if ("nextToken" in response):
             response = iot_client.list_principal_things(
                 principal=principal, maxResults=pageSize, nextToken=response["nextToken"])
         else:
             break
 
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(
-            "aws-iot-core: "+f"\t\tGetting things is completed. In total {things_count} things are found associated with the principal.")
+            "aws-iot-core: " + f"\t\tGetting things is completed. In total {things_count} things are found associated with the principal.")
     return thingNames
 
 
@@ -661,14 +667,14 @@ def aws_iot_core_delete_all_things(detail=True):
     iot_client = boto3.client('iot', IOT_CORE_REGION)
 
     # Log Info
-    if(detail):
+    if (detail):
         logger_aws_iot_core.info(f"Deleting things")
 
     # Step 0: Get the things
     logger_aws_iot_core.info(f"\tStep 0: Getting things ...")
     things = aws_iot_core_get_all_things(detail=False)
     things_count = len(things["thingNames"])
-    if(things_count == 0):
+    if (things_count == 0):
         logger_aws_iot_core.info(
             f"\t\tThere are no things registered. Exiting")
         return 0
@@ -686,7 +692,7 @@ def aws_iot_core_delete_all_things(detail=True):
                 thingName=thingName, principal=associated_principal)
             logger_aws_iot_core.info(
                 f"\t\tDetaching the principal {associated_principal[:50]}... from the thingName: {thingName}")
-        if(not associated_principals):
+        if (not associated_principals):
             logger_aws_iot_core.info(
                 f"\t\tThere isn't any associated principal for the thing {thingName}")
 
@@ -722,7 +728,7 @@ def aws_s3_config():
         f"\tListing the S3 Buckets in the IOT_CORE_REGION {S3_REGION}")
 
     for bucket in s3_response['Buckets']:
-        if(bucket['Name'] == BUCKET_NAME):
+        if (bucket['Name'] == BUCKET_NAME):
             logger_aws_iot_core.info(
                 f"\t\tFound S3 Bucket: {bucket['Name']} no need to create a new one.")
             is_bucket_exist = True
@@ -730,7 +736,7 @@ def aws_s3_config():
             logger_aws_iot_core.info(f"\t\tFound S3 Bucket: {bucket['Name']}")
 
     # Step 1: Create a bucket. If bucket namaspace is not unique , you need to change the name.
-    if(not is_bucket_exist):
+    if (not is_bucket_exist):
         try:
             s3_client.create_bucket(Bucket=BUCKET_NAME)
             logger_aws_iot_core.info(
@@ -779,14 +785,14 @@ def aws_iot_core_attach_certificates(detail=True):
     certificateArns = aws_iot_core_get_all_certificates()["certificateArns"]
     policyNames = aws_iot_core_get_all_policies()["policyNames"]
 
-    if(SET_CERT_UNIQUE):
+    if (SET_CERT_UNIQUE):
         # Attach unique certificates to things and policy to certificates
-        if(len(thingNames) == len(certificateArns)):
+        if (len(thingNames) == len(certificateArns)):
             for i in range(len(thingNames)):
                 # Attach certificate to things
                 iot_client.attach_thing_principal(
                     thingName=thingNames[i], principal=certificateArns[i])
-                if(detail):
+                if (detail):
                     logger_aws_iot_core.info(
                         f"\tAttaching thing {thingNames[i]} and certificate {certificateArns[i][:50]}...")
 
@@ -799,7 +805,7 @@ def aws_iot_core_attach_certificates(detail=True):
 
     else:
         # Attach one and only certificate to things.
-        if(len(certificateArns) > 1):
+        if (len(certificateArns) > 1):
             logger_aws_iot_core.error(
                 "More than one certificate is registered. Can't decide which one to use.")
         else:

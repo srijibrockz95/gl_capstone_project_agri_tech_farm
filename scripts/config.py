@@ -17,6 +17,9 @@ IOT_CORE_REGION = "us-east-1"
 THING_TYPE_NAME = "soil_sensor"
 THING_NAME_PREFIX = "sensor"
 THING_COUNT = 20
+THING_GROUP_COUNT = 5
+THING_GROUP_NAME_PREFIX = "sprinkler"
+THING_GROUP_BASE_ARN = "arn:aws:iot:us-east-1:305936854373:thinggroup/{0}".format(THING_GROUP_NAME_PREFIX)
 
 # AWS IoT Core - Parameters used for the MQTT Connection
 MQTT_ENDPOINT = "a2h3iir2hinzvl-ats.iot.us-east-1.amazonaws.com"
@@ -30,7 +33,7 @@ SET_CERT_UNIQUE = True
 
 # AWS S3 - Paremeters used to set up a  S3 bucket 
 S3_REGION = "us-east-1"
-S3_BUCKET= 'iot-use-cases'
+# S3_BUCKET= 'iot-use-cases'
 ROLE_ARN = "arn:aws:iam::305936854373:role/capstoneagritechfarmrole1"
 BUCKET_NAME = "capstoneagritechfarm"
 
