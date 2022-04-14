@@ -27,6 +27,7 @@ class AWSIoTThing():
         self.id = AWSIoTThing.count
         AWSIoTThing.count += 1
 
+
 def aws_iot_core_create_policy(detail=True):
     """"
     The purpose of this method is to create a policy to allow things to connect, publish and subcribe to AWS IoT Core.
@@ -80,7 +81,6 @@ def create_provision_file():
     group_number = 1
     for i in range(THING_COUNT):
         if group_number <= THING_GROUP_COUNT:
-            print(((i - group_number) / group_number))
             if ((i - group_number) / group_number) == 3:
                 group_number += 1
         things[i] = AWSIoTThing(THING_NAME_PREFIX, THING_TYPE_NAME, group_number, THING_GROUP_NAME_PREFIX)
@@ -134,34 +134,64 @@ def aws_iot_core_create_bulk_things():
     logger_aws_iot_core.info(f"\tChecking thingType")
     thingType_name = "soil_sensor"
     thingTypes = aws_iot_core_get_all_thing_types()
-    if (thingType_name in thingTypes["thingTypeNames"]):
+    if thingType_name in thingTypes["thingTypeNames"]:
         logger_aws_iot_core.info(
             f"\t\tThing type Name {thingType_name} is already present no need to crete new one.")
     else:
         iot_client.create_thing_type(thingTypeName='soil_sensor', thingTypeProperties={
             'thingTypeDescription': 'Generic soil_sensor thing type'})
 
-    # Step 1: Start things regisration task
+    # Step 1: Create a thing group prior to start thing registiration
+    logger_aws_iot_core.info(f"\tCreating thingGroup")
+    for i in range(1, THING_GROUP_COUNT + 1):
+        response = iot_client.create_thing_group(thingGroupName=THING_GROUP_NAME_PREFIX + "_" + str(i),
+                                                 thingGroupProperties={'thingGroupDescription':
+                                                                       'thing group for {0}_{1}'.format(
+                                                                        THING_GROUP_NAME_PREFIX, str(i))})
+        logger_aws_iot_core.info(response["thingGroupArn"])
+
+    # Step 2: Start things regisration task
     response = iot_client.start_thing_registration_task(templateBody=f.read(
     ), inputFileBucket=BUCKET_NAME, inputFileKey=OBJ_PROVISION_FILE, roleArn=ROLE_ARN)
     taskId = response['taskId']
 
-    # Step 2: describe_thing_registration_task
+    # Step 3: describe_thing_registration_task
     while (1):
         response = iot_client.describe_thing_registration_task(taskId=taskId)
         response_status = response['status']
-        if (response_status == "Completed"):
+        if response_status == "Completed":
             logger_aws_iot_core.info(
                 f"\t Status of the bulk registration task: {response['status']}")
             return True
-        if (response_status == "InProgress"):
+        if response_status == "InProgress":
             logger_aws_iot_core.info(
                 f"\t Status of the bulk registration task: {response['status']}")
-        if (response_status == "Failed"):
+        if response_status == "Failed":
             logger_aws_iot_core.error(
                 f"\t Status of the bulk registration task: {response['status']}")
             return False
         time.sleep(1)
+
+
+def add_thing_to_thing_group():
+    """
+    Add thing to its corresponding group as mapped in the provisioning-data.json file
+    """
+    logger_aws_iot_core.info(f"\tAdding thing to thing group")
+    iot_client = boto3.client('iot', IOT_CORE_REGION)
+    thing_list = []
+    with open(PATH_TO_PROVISION) as f1:
+        for jsonObj in f1:
+            thing_dict = json.loads(jsonObj)
+            thing_list.append(thing_dict)
+    for t in thing_list:
+        response = iot_client.add_thing_to_thing_group(thingGroupName=t["GroupName"],
+                                                       thingGroupArn=THING_GROUP_BASE_ARN + t["GroupName"],
+                                                       thingName=t["ThingName"],
+                                                       thingArn=THING_BASE_ARN + t["ThingName"],
+                                                       overrideDynamicGroups=True)
+        logger_aws_iot_core.info("Added thing "+t["ThingName"]+" to group "+t["GroupName"]+"...." +
+                                 str(response["ResponseMetadata"]["HTTPStatusCode"]))
 
 
 def aws_s3_reset():

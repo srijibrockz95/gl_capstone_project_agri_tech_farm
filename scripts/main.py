@@ -9,7 +9,7 @@ if __name__ == "__main__":
     aws_iot_core_reset()
 
     # Step 0.1 : Reset/Delete all the existing buckets and their contents in AWS S3
-    #aws_s3_reset()
+    aws_s3_reset()
 
     # Step 1: Create a provision file
     create_provision_file()
@@ -21,7 +21,10 @@ if __name__ == "__main__":
     status = aws_iot_core_create_bulk_things()
     if(not status):exit
 
-    # Step 4: Create certificates in the Iot Core registery
+    # Step 4: Adding things to thing groups
+    add_thing_to_thing_group()
+
+    # Step 5: Create certificates in the Iot Core registery
     aws_iot_core_create_certificates()
     
     # Step 6: Create policy
