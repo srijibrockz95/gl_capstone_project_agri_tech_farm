@@ -1,0 +1,48 @@
+-- ** Aggregate (COUNT, AVG, etc.) + Tumbling Time Window **
+-- Performs function on the aggregate rows over a 10 second tumbling window for a specified column. 
+--          .----------.   .----------.   .----------.              
+--          |  SOURCE  |   |  INSERT  |   |  DESTIN. |              
+-- Source-->|  STREAM  |-->| & SELECT |-->|  STREAM  |-->Destination
+--          |          |   |  (PUMP)  |   |          |              
+--          '----------'   '----------'   '----------'               
+-- STREAM (in-application): a continuously updated entity that you can SELECT from and INSERT into like a TABLE
+-- PUMP: an entity used to continuously 'SELECT ... FROM' a source STREAM, and INSERT SQL results into an output STREAM
+-- Create output stream, which can be used to send to a destination
+CREATE OR REPLACE STREAM "AGGREGATE_SQL_STREAM" (
+    sprinklerid VARCHAR(16),
+    sensor_id VARCHAR(8),
+    sensor_timestamp TIMESTAMP,
+    avg_temperature REAL,
+    max_temperature REAL,
+    min_temperature REAL,
+    avg_moisture REAL,
+    max_moisture REAL,
+    min_moisture REAL
+);
+
+-- Create a pump which continuously selects from a source stream (SOURCE_SQL_STREAM_001)
+-- performs an aggregate count that is grouped by columns ticker over a 10-second tumbling window
+-- and inserts into output stream (DESTINATION_SQL_STREAM)
+CREATE OR REPLACE  PUMP "STREAM_AGGREGATE_PUMP" AS INSERT INTO "AGGREGATE_SQL_STREAM"
+-- Aggregate function COUNT|AVG|MAX|MIN|SUM|STDDEV_POP|STDDEV_SAMP|VAR_POP|VAR_SAMP)
+SELECT STREAM "sprinklerid", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '10' SECOND) as "sensor_timestamp", avg("sensor_temperature") as "avg_temperature", max("sensor_temperature") as "max_temperature", min("sensor_temperature") as "min_temperature", avg("sensor_moisture") as "avg_moisture", max("sensor_moisture") as "max_moisture", min("sensor_moisture") as "min_moisture"
+FROM "SOURCE_SQL_STREAM_001"
+-- Uses a 10-second tumbling time window
+GROUP BY "sprinklerid", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '10' SECOND);
+
+
+
+-- Anamoly Stream
+CREATE OR REPLACE STREAM "ANOMALY_SQL_STREAM" (
+    sprinklerid VARCHAR(16),
+    sensor_id VARCHAR(8),
+    sensor_timestamp TIMESTAMP,
+    avg_temperature REAL,
+    avg_moisture REAL
+);
+
+CREATE OR REPLACE  PUMP "STREAM_ANAMOLY_PUMP" AS INSERT INTO "ANOMALY_SQL_STREAM"
+SELECT STREAM "sprinklerid", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '10' SECOND) as "sensor_timestamp", avg("sensor_temperature") as "avg_temperature", avg("sensor_moisture") as "avg_moisture"
+FROM "SOURCE_SQL_STREAM_001"
+GROUP BY "sprinklerid", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '10' SECOND)
+HAVING avg("sensor_temperature") >= 20 and avg("sensor_moisture") <= 60;
