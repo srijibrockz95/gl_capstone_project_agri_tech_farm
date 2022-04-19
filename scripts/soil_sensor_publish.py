@@ -13,8 +13,8 @@ from cloudpathlib import CloudPath
 import schedule as schedule
 
 ENDPOINT = "awsua5nqua109-ats.iot.us-east-1.amazonaws.com"
-PATH_TO_CERT = "/Users/sandeepkrishnan/Projects/Personal_Capstone_Project/Soil_Sensor_AWS_Publish/config"
-PATH_TO_CONFIG = "/Users/sandeepkrishnan/Projects/Personal_Capstone_Project/Soil_Sensor_AWS_Publish/config"
+PATH_TO_CERT = "/home/ubuntu/Capstone_project/gl_capstone_project_agri_tech_farm/certificates_configurations"
+PATH_TO_CONFIG = "/home/ubuntu/Capstone_project/gl_capstone_project_agri_tech_farm/certificates_configurations"
 config_file_name = "provisioning-data.json"
 TOPIC = "iot/agritech"
 
@@ -42,7 +42,7 @@ class AWS():
         self.myAWSIoTMQTTClient.connect()
 
 
-    # This method will publish the data on MQTT 
+    # This method will publish the data on MQTT
     # Before publishing we are confiuguring message to be published on MQTT
     def publish(self):
             print('Begin Publish')
@@ -78,8 +78,8 @@ if __name__ == '__main__':
 
     # Download the certificates from S3 bucket and save it in local/EC2
     # currently hashed as the certificates are not available in S3 yet. So reading from local path
-    #cp = CloudPath("s3://capstoneagritechfarm1/")
-    #cp.download_to(PATH_TO_CERT)
+    cp = CloudPath("s3://capstoneagritechfarm1/")
+    cp.download_to(PATH_TO_CERT)
 
     #Serialize the sensors listed in the config file
     with open(config_file_path) as configFile:
@@ -121,5 +121,3 @@ if __name__ == '__main__':
             #time.sleep(5)
         except KeyboardInterrupt:
             break
-
-
