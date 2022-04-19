@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     for device in thing_list:
         print(device["ThingName"], type(device["ThingName"]))
-        device["ThingName"] = AWS(device["ThingName"], device["ThingName"]+"-cert.pem.crt", device["ThingName"]+"-private.pem.key")
+        device["ThingName"] = AWS(device["ThingName"], device["ThingName"]+".pem.crt", device["ThingName"]+"pem.key")
     '''
     s3Client = boto3.client('s3')
     response = s3Client.get_object(
