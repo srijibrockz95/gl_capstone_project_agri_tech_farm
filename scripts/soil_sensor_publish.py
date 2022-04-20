@@ -1,3 +1,4 @@
+from config import *
 import threading
 import time
 import json
@@ -12,11 +13,7 @@ from cloudpathlib import CloudPath
 # Define ENDPOINT, TOPIC, RELATOVE DIRECTORY for CERTIFICATE AND KEYS
 import schedule as schedule
 
-ENDPOINT = "awsua5nqua109-ats.iot.us-east-1.amazonaws.com"
-PATH_TO_CERT = "/home/ubuntu/Capstone_project/gl_capstone_project_agri_tech_farm/certificates_configurations"
-PATH_TO_CONFIG = "/home/ubuntu/Capstone_project/gl_capstone_project_agri_tech_farm/certificates_configurations"
-config_file_name = "provisioning-data.json"
-TOPIC = "iot/agritech"
+
 
 # AWS class to create number of objects (devices)
 class AWS():
@@ -28,10 +25,10 @@ class AWS():
         self.client_id = client
         self.device_id = client
         self.cert_path = PATH_TO_CERT + "/" + certificate
-        self.pvt_key_path = PATH_TO_CERT + "/" + private_key
-        self.root_path = PATH_TO_CERT + "/" + "AmazonRootCA1.pem"
+        self.pvt_key_path = PATH_TO_KEY + "/" + private_key
+        self.root_path = PATH_TO_ROOT_CA
         self.myAWSIoTMQTTClient = AWSIoTPyMQTT.AWSIoTMQTTClient(self.client_id)
-        self.myAWSIoTMQTTClient.configureEndpoint(ENDPOINT, 8883)
+        self.myAWSIoTMQTTClient.configureEndpoint(ENDPOINT, MQTT_PORT)
         self.myAWSIoTMQTTClient.configureCredentials(self.root_path, self.pvt_key_path, self.cert_path)
         self._connect()
 
@@ -67,15 +64,16 @@ class AWS():
 # Also there can be different method calls as well based on the devices and their working.
 if __name__ == '__main__':
     # Download the config file from the S3 bucket and save it in local/EC2
-    cp = CloudPath("s3://capstoneagritechfarm1")
+    cp = CloudPath("s3://" + BUCKET_NAME)
     cp.download_to(PATH_TO_CONFIG)
     thing_list = []
-    config_file_path = PATH_TO_CONFIG + "/"+ config_file_name
+    config_file_path = PATH_TO_CONFIG + "/"+ PROVISION_FILE_NAME
 
     # Download the certificates from S3 bucket and save it in local/EC2
     # currently hashed as the certificates are not available in S3 yet. So reading from local path
-    cp = CloudPath("s3://capstoneagritechfarm1/")
+    cp = CloudPath("s3://" + BUCKET_NAME)
     cp.download_to(PATH_TO_CERT)
+    cp.download_to(PATH_TO_KEY)
 
     #Serialize the sensors listed in the config file
     with open(config_file_path) as configFile:
