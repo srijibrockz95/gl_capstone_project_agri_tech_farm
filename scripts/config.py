@@ -23,11 +23,14 @@ THING_GROUP_BASE_ARN = "arn:aws:iot:us-east-1:212546747799:thinggroup/"
 THING_BASE_ARN = "arn:aws:iot:us-east-1:212546747799:thing/"
 
 # AWS IoT Core - Parameters used for the MQTT Connection
-MQTT_ENDPOINT = "account_endpoint_for_things.amazonaws.com"
+ENDPOINT = "a1df0xo7q9cvqr-ats.iot.us-east-1.amazonaws.com"
 PATH_TO_ROOT_CA = "../secure/ca/AmazonRootCA1.pem"
-PATH_TO_CERT = "../config"
+PATH_TO_CERT = "../secure/certificates"
+PATH_TO_CONFIG = "../secure/provision"
+PATH_TO_KEY = "../secure/keys/private"
 MQTT_PORT = 8883
-MQTT_TOPIC = "iot/agritech"
+TOPIC = "iot/agritech"
+
 
 # AWS IoT Core - Parameter used for creating certificates(s)
 SET_CERT_UNIQUE = True
