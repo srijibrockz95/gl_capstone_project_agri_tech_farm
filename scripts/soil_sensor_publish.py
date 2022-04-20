@@ -84,7 +84,7 @@ if __name__ == '__main__':
     #Create device/sensor objects using the appropriate certificates and private keys
     for device in thing_list:
         print(device["ThingName"], type(device["ThingName"]))
-        device["ThingName"] = AWS(device["ThingName"], device["ThingName"]+".pem.crt", device["ThingName"]+"pem.key")
+        device["ThingName"] = AWS(device["ThingName"], device["ThingName"]+".pem.crt", device["ThingName"]+".pem.key")
 
 
     # Publish to the same topic in a loop forever for all devices/sensors
