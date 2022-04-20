@@ -529,7 +529,7 @@ def aws_iot_core_create_certificates():
             f = open("../secure/keys/private/" + thing + ".pem.key", "w")
             f.write(key_private)
             f.close()
-            s3_client.put_object(Body=open("/secure/keys/private/" + thing + ".pem.key", 'rb'),
+            s3_client.put_object(Body=open("../secure/keys/private/" + thing + ".pem.key", 'rb'),
                                  Bucket=BUCKET_NAME, Key=thing + ".pem.key")
 
             logger_aws_iot_core.info(f"\tPrivate key is successfully uploaded")
@@ -543,7 +543,7 @@ def aws_iot_core_create_certificates():
             f = open("../secure/certificates/" + thing + ".pem.crt", "w")
             f.write(certificate)
             f.close()
-            s3_client.put_object(Body=open("/secure/certificates/" + thing + ".pem.crt", 'rb'),
+            s3_client.put_object(Body=open("../secure/certificates/" + thing + ".pem.crt", 'rb'),
                                  Bucket=BUCKET_NAME, Key=thing + ".pem.crt")
 
             logger_aws_iot_core.info(f"\tCertificate is successfully uploaded")
