@@ -100,4 +100,4 @@ class setup:
         # Create email subscription
         sub_response = sns_client.subscribe(
             TopicArn=topic_arn, Protocol="email", Endpoint="rekhacthomas@gmail.com")
-        subscription_arn = response["SubscriptionArn"]
+        subscription_arn = response["sub_response"]
