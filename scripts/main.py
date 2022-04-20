@@ -1,6 +1,7 @@
 from config import *
 from utils import *
 from sys import exit
+from setup import setup
 
 
 if __name__ == "__main__":
@@ -33,3 +34,12 @@ if __name__ == "__main__":
 
     # Step 7: Attach everything
     aws_iot_core_attach_certificates()
+
+    # Testing
+    # set_db = setup()
+    # dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    # sns_client = boto3.client("sns", region_name="us-east-1")
+    # set_db.create_anomaly_data_table(dynamodb=dynamodb)
+    # set_db.create_sprinkler_data_table(dynamodb=dynamodb)
+    # set_db.insert_sprinkler_data(dynamodb=dynamodb)
+    # set_db.create_sns()
