@@ -120,4 +120,5 @@ if __name__ == '__main__':
             scheduler.run()
             #time.sleep(5)
         except KeyboardInterrupt:
-            break
+            for device in thing_list:
+                device["ThingName"].disconnect()
