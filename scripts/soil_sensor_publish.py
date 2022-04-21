@@ -46,7 +46,7 @@ class AWS():
             message = {}
             temp_value = float(random.normalvariate(21, 1.5))
             temp_value = round(temp_value, 1)
-            moisture_value = float(random.normalvariate(59, 1.5))
+            moisture_value = float(random.normalvariate(58, 1.5))
             moisture_value = round(moisture_value, 1)
             timestamp = str(datetime.datetime.now())
             message['sensor_id'] = self.device_id
