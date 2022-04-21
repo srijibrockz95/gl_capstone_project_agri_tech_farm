@@ -21,9 +21,10 @@ class AWS():
     # This method will obviosuly be called while creating the instance
     # It will create the MQTT client for AWS using the credentials
     # Connect operation will make sure that connection is established between the device and AWS MQTT
-    def __init__(self, client, certificate, private_key):
+    def __init__(self, client, group, certificate, private_key):
         self.client_id = client
         self.device_id = client
+        self.sprinkler_id = group
         self.cert_path = PATH_TO_CERT + "/" + certificate
         self.pvt_key_path = PATH_TO_KEY + "/" + private_key
         self.root_path = PATH_TO_ROOT_CA
@@ -49,6 +50,7 @@ class AWS():
             moisture_value = round(moisture_value, 1)
             timestamp = str(datetime.datetime.now())
             message['sensor_id'] = self.device_id
+            message['sprinkler_id'] = self.sprinkler_id
             message['sensor_timestamp'] = timestamp
             message['sensor_temperature'] = temp_value
             message['sensor_moisture'] = moisture_value
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     #Create device/sensor objects using the appropriate certificates and private keys
     for device in thing_list:
         print(device["ThingName"], type(device["ThingName"]))
-        device["ThingName"] = AWS(device["ThingName"], device["ThingName"]+".pem.crt", device["ThingName"]+".pem.key")
+        device["ThingName"] = AWS(device["ThingName"], device["GroupName"], device["ThingName"]+".pem.crt", device["ThingName"]+".pem.key")
 
 
     # Publish to the same topic in a loop forever for all devices/sensors
