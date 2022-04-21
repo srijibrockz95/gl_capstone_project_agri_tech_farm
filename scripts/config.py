@@ -19,23 +19,26 @@ THING_NAME_PREFIX = "Sensor"
 THING_COUNT = 20
 THING_GROUP_COUNT = 5
 THING_GROUP_NAME_PREFIX = "Sprinkler"
-THING_GROUP_BASE_ARN = "arn:aws:iot:us-east-1:305936854373:thinggroup/"
-THING_BASE_ARN = "arn:aws:iot:us-east-1:305936854373:thing/"
+THING_GROUP_BASE_ARN = "arn:aws:iot:us-east-1:212546747799:thinggroup/"
+THING_BASE_ARN = "arn:aws:iot:us-east-1:212546747799:thing/"
 
 # AWS IoT Core - Parameters used for the MQTT Connection
-MQTT_ENDPOINT = "account_endpoint_for_things.amazonaws.com"
+ENDPOINT = "a1df0xo7q9cvqr-ats.iot.us-east-1.amazonaws.com"
 PATH_TO_ROOT_CA = "../secure/ca/AmazonRootCA1.pem"
-PATH_TO_CERT = "../config"
+PATH_TO_CERT = "../secure/certificates"
+PATH_TO_CONFIG = "../secure/provision"
+PATH_TO_KEY = "../secure/keys/private"
 MQTT_PORT = 8883
-MQTT_TOPIC = "iot/agritech"
+TOPIC = "iot/agritech"
+
 
 # AWS IoT Core - Parameter used for creating certificates(s)
 SET_CERT_UNIQUE = True
 
-# AWS S3 - Paremeters used to set up a  S3 bucket
+# AWS S3 - Paremeters used to set up a  S3 bucket 
 S3_REGION = "us-east-1"
-ROLE_ARN = "arn:aws:iam::305936854373:role/capstoneagritechfarmrole1"
-BUCKET_NAME = "capstoneagritechfarm"
+ROLE_ARN = "arn:aws:iam::212546747799:role/capstoneagritechfarmrole1"
+BUCKET_NAME = "capstoneagritechfarm20"
 
 
 OBJ_PROVISION_FILE = PROVISION_FILE_NAME
@@ -50,3 +53,6 @@ log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', date
 handler_aws_iot_core.setFormatter(log_format_aws_iot_core)
 handler.setFormatter(log_format)
 logger_aws_iot_core.addHandler(handler_aws_iot_core)
+
+
+
