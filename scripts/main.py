@@ -10,7 +10,7 @@ if __name__ == "__main__":
     aws_iot_core_reset()
 
     # Step 0.1 : Reset/Delete all the existing buckets and their contents in AWS S3
-    # aws_s3_reset()
+    aws_s3_reset()
 
     # Step 1: Create a provision file
     create_provision_file()
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # Step 7: Attach everything
     aws_iot_core_attach_certificates()
 
-    # Testing
+    # - One time use while setting up tables.
     # set_db = setup()
     # dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     # sns_client = boto3.client("sns", region_name="us-east-1")
@@ -43,3 +43,4 @@ if __name__ == "__main__":
     # set_db.create_sprinkler_data_table(dynamodb=dynamodb)
     # set_db.insert_sprinkler_data(dynamodb=dynamodb)
     # set_db.create_sns()
+    # set_db.test_code_lambda()

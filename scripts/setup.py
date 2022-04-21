@@ -3,6 +3,8 @@ from unicodedata import decimal
 from urllib import response
 import boto3
 from decimal import Decimal
+from boto3.dynamodb.conditions import Key, Attr
+import json
 
 
 class setup:
@@ -52,41 +54,47 @@ class setup:
                     'AttributeName': 'sprinkler_id',
                     'KeyType': 'HASH'
                 },
-                {
-                    'AttributeName': 'status',
-                    'KeyType': 'RANGE'
-                }
+
+                # },
+                # {
+                #     'AttributeName': 'sprinkler_status',
+                #     'KeyType': 'RANGE'
+                # }
             ],
             AttributeDefinitions=[
                 {
                     'AttributeName': 'sprinkler_id',
                     'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': 'status',
-                    'AttributeType': 'S'
                 }
+                # },
+                # {
+                #     'AttributeName': 'sprinkler_status',
+                #     'AttributeType': 'S'
+                # }
             ],
             ProvisionedThroughput={
                 'ReadCapacityUnits': 5,
                 'WriteCapacityUnits': 5
             }
         )
+        print("Table status:", table.table_status)
 
     def insert_sprinkler_data(self, dynamodb):
         table = dynamodb.Table('sprinkler_data')
-        latitude = 98.9
-        longitude = 100.5
-        for i in range(5):
+        latitude = 28.5355
+        longitude = 77.3910
+        for i in range(1, 6):
+            raw_data = {
+                # The PK and the sort keys are mandatory
+                'sprinkler_id': f'Sprinkler{i}',
+                'sprinkler_status': 'OFF',
+                # Due to the schemaless nature the following keys are not required in the table definition
+                'latitude': latitude,
+                'longitude': longitude
+            }
+            ddb_data = json.loads(json.dumps(raw_data), parse_float=Decimal)
             table.put_item(
-                Item={
-                    # The PK and the sort keys are mandatory
-                    'sprinkler_id': f'sprinkler_{i}',
-                    'status': 'OFF',
-                    # Due to the schemaless nature the following keys are not required in the table definition
-                    'latitude': str(latitude),
-                    'longitude': str(longitude)
-                }
+                Item=ddb_data
             )
             latitude += 1
             longitude += 1
@@ -100,4 +108,21 @@ class setup:
         # Create email subscription
         sub_response = sns_client.subscribe(
             TopicArn=topic_arn, Protocol="email", Endpoint="rekhacthomas@gmail.com")
-        subscription_arn = response["sub_response"]
+        # subscription_arn = response["sub_response"]
+
+    def test_code_lambda(self):
+        sprinkler_table_name = 'sprinkler_data'
+        sprinkler_table = boto3.resource(
+            'dynamodb').Table(sprinkler_table_name)
+        update_resp = sprinkler_table.update_item(
+            Key={
+                # sprinkler_id, latitude, longitude, status
+                'sprinkler_id': 'Sprinkler2'
+            },
+            UpdateExpression='set sprinkler_status = :val1',
+            ExpressionAttributeValues={
+                ':val1': 'ON'
+            },
+            ReturnValues="UPDATED_NEW"
+        )
+        print(update_resp)
