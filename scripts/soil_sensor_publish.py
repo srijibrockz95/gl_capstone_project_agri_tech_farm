@@ -44,9 +44,9 @@ class AWS():
             print('Begin Publish')
             # Iterating through the items in device configuration dictionary, every second
             message = {}
-            temp_value = float(random.normalvariate(19, 1.5))
+            temp_value = float(random.normalvariate(21, 1.5))
             temp_value = round(temp_value, 1)
-            moisture_value = float(random.normalvariate(61, 1.5))
+            moisture_value = float(random.normalvariate(59, 1.5))
             moisture_value = round(moisture_value, 1)
             timestamp = str(datetime.datetime.now())
             message['sensor_id'] = self.device_id
