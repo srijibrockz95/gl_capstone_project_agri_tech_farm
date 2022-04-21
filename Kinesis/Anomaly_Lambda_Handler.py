@@ -10,20 +10,22 @@ from boto3 import resource
 from decimal import Decimal
 
 
-def lambda_handler(event, context):
+def Anomaly_handler(event, context):
     # Dynamodb
     anomaly_table_name = 'anomaly_data'
     anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
     sprinkler_table_name = 'sprinkler_data'
     sprinkler_table = boto3.resource('dynamodb').Table(sprinkler_table_name)
     # owm
-    owm = OWM('c0adabdd390870a2ae001b8c2ba65496')
+    owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
 
     # sns
     sns_client = boto3.client('sns', region_name='us-east-1')
     # change required
-    topic_arn = "arn:aws:sns:us-east-1:108664094679:weather_data_sns_topic"
+    topic_arn = "arn:aws:sns:us-east-1:212546747799:weather_data_sns_topic"
+
     # iot-core
+    # import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
     iot_client = boto3.client('iot-data', region_name='us-east-1')
     i = 0
     try:
@@ -34,7 +36,7 @@ def lambda_handler(event, context):
             data = base64.b64decode(record['data'])
             data = str(data, 'utf-8')
             readings = json.loads(data)
-            # pprint(readings, sort_dicts=False)
+            # get anomaly data
             sprinkler_id = readings['SPRINKLER_ID']
             print(f"sprinkler_id: {sprinkler_id}")
             sensor_id = readings['SENSOR_ID']
@@ -42,41 +44,35 @@ def lambda_handler(event, context):
             temperature = str(readings['AVG_TEMPERATURE'])
             moisture = str(readings['AVG_MOISTURE'])
 
-            # get sprinkler lat and long
-            # print("get sprinkler lat and long")
-
+            # get sprinkler lat,long and status values
             response = sprinkler_table.query(
                 KeyConditionExpression=Key('sprinkler_id').eq(sprinkler_id))
-
-            # print(f"sprinkler data: ")
-            # print(response)
             sprinkler_data = response['Items']
-
             # pprint(sprinkler_data)
-            # change required
             lat = sprinkler_data[0]['latitude']
             long = sprinkler_data[0]['longitude']
-            sprinkler_status = sprinkler_data[0]['status']
+            sprinkler_status = sprinkler_data[0]['sprinkler_status']
 
             print(f"lat and long: {float(lat)},{float(long)}")
 
-            # # owm weather data
-            # mgr = owm.weather_manager()
-            # print(f"weather mgr: {mgr}")
-            # one_call = mgr.one_call(lat=float(lat), lon=float(long))
-            # print(f"one_call: {one_call}")
-            # current_data = json.dumps(one_call.current.__dict__)
+            # # get owm weather data
+            mgr = owm.weather_manager()
+            print(f"weather mgr: {mgr}")
+            one_call = mgr.one_call(lat=float(lat), lon=float(long))
+            print(f"one_call: {one_call}")
+            current_data = json.dumps(one_call.current.__dict__)
 
-            # pprint(current_data)
-            # owm_humidity = one_call.current.humidity
-            # owm_temperature = one_call.current.temperature('celsius')['temp']
+            pprint(current_data)
+            owm_humidity = one_call.current.humidity
+            owm_temperature = one_call.current.temperature('celsius')['temp']
 
-            # print(f"owm_temperature: {owm_temperature}")
-            # print(f"owm_humidity: {owm_humidity}")
+            print(f"owm_temperature: {owm_temperature}")
+            print(f"owm_humidity: {owm_humidity}")
             # ignore seconds. considering only minutes.
             owm_timestamp = timestamp
             owm_temperature = 25
             owm_humidity = 30
+            # owm anomaly check and processes followed
             if owm_temperature >= 20 or owm_humidity <= 60:
                 owm_alert_flag = True
                 print(f"owm_alert_flag: {owm_alert_flag}")
@@ -89,14 +85,16 @@ def lambda_handler(event, context):
                 print(f"owm_anomaly: {owm_anomaly}")
                 print(f"sensor_anomaly: {sensor_anomaly}")
 
+                # insert both(sensors and owm) anomaly data to dynamodb
                 ddb_sensor_anomaly_data = json.loads(
                     json.dumps(sensor_anomaly), parse_float=Decimal)
                 ddb_owm_anomaly_data = json.loads(
                     json.dumps(owm_anomaly), parse_float=Decimal)
-
                 anomaly_table.put_item(Item=ddb_sensor_anomaly_data)
                 anomaly_table.put_item(Item=ddb_owm_anomaly_data)
+
                 # send sns notification
+                print("SNS starting")
                 message = f"\n Hello, \n\n Weather data anomaly detected on {timestamp} for {sensor_id}.\n\n  {json.dumps(sensor_anomaly)}\n\n  {json.dumps(owm_anomaly)}"
                 subject = f"{timestamp} Weather data anomaly detected for {sensor_id} and current OWM weather data. Please  turn on the sprinkler: {sprinkler_id}"
                 sns_client.publish(TopicArn=topic_arn, Message=message)
