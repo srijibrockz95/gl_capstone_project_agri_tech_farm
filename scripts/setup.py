@@ -5,6 +5,8 @@ import boto3
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key, Attr
 import json
+import AWSIoTPythonSDK
+import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
 
 
 class setup:
@@ -12,6 +14,38 @@ class setup:
     # Place this code in main.py
     # dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     # sns_client = boto3.client("sns", region_name="us-east-1")
+
+    # Create aggregate table
+    def create_aggregate_data_table(self, dynamodb):
+
+        table = dynamodb.create_table(
+            TableName='aggregate_data',
+            KeySchema=[
+                {
+                    'AttributeName': 'sprinkler_id',
+                    'KeyType': 'HASH'
+                },
+                {
+                    'AttributeName': 'sensor_timestamp',
+                    'KeyType': 'RANGE'
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'sprinkler_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'sensor_timestamp',
+                    'AttributeType': 'S'
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        print("Table status:", table.table_status)
 
     # Create anomaly table
 
@@ -44,7 +78,7 @@ class setup:
                 'WriteCapacityUnits': 5
             }
         )
-    # Create aggregate_data table
+        print("Table status:", table.table_status)
 
     def create_sprinkler_data_table(self, dynamodb):
         table = dynamodb.create_table(
@@ -66,11 +100,6 @@ class setup:
                     'AttributeName': 'sprinkler_id',
                     'AttributeType': 'S'
                 }
-                # },
-                # {
-                #     'AttributeName': 'sprinkler_status',
-                #     'AttributeType': 'S'
-                # }
             ],
             ProvisionedThroughput={
                 'ReadCapacityUnits': 5,
@@ -111,6 +140,7 @@ class setup:
         # subscription_arn = response["sub_response"]
 
     def test_code_lambda(self):
+
         sprinkler_table_name = 'sprinkler_data'
         sprinkler_table = boto3.resource(
             'dynamodb').Table(sprinkler_table_name)
