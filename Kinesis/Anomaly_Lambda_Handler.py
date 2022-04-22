@@ -26,7 +26,8 @@ def Anomaly_handler(event, context):
 
     # iot-core
     # import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
-    iot_client = boto3.client('iot-data', region_name='us-east-1')
+    iot_client = boto3.client(
+        'iot-data', region_name='us-east-1', verify=False)
     i = 0
     try:
 
@@ -55,7 +56,7 @@ def Anomaly_handler(event, context):
 
             print(f"lat and long: {float(lat)},{float(long)}")
 
-            # # get owm weather data
+            # get owm weather data
             mgr = owm.weather_manager()
             print(f"weather mgr: {mgr}")
             one_call = mgr.one_call(lat=float(lat), lon=float(long))
@@ -112,14 +113,14 @@ def Anomaly_handler(event, context):
                 )
                 print(update_resp)
 
-                # # publish to iot core
+                # publish to iot core
                 # # chanage required for topic. need to check
-                # response = iot_client.publish(topic=f'weather_data', qos=1, payload={
-                #     json.dumps(sensor_anomaly)})
-                # # , json.dumps(owm_anomaly)
-                # print(response)
+                response = iot_client.publish(
+                    topic='weather_data', payload=json.dumps(sensor_anomaly))
+
+                print(response)
 
             else:
                 print(f"No anomaly in OWM data: {owm_anomaly}")
     except Exception as e:
-        print(f'e')
+        print(e)
