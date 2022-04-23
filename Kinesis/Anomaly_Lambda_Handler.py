@@ -53,6 +53,7 @@ def Anomaly_handler(event, context):
             lat = sprinkler_data[0]['latitude']
             long = sprinkler_data[0]['longitude']
             sprinkler_status = sprinkler_data[0]['sprinkler_status']
+            sprinkler_timestamp = sprinkler_data[0]['timestamp']
 
             print(f"lat and long: {float(lat)},{float(long)}")
 
@@ -102,16 +103,39 @@ def Anomaly_handler(event, context):
                 print("sns published. check email")
 
                 # update sprinkler status in sprinkler table.
-                update_resp = sprinkler_table.update_item(
+                # since we need to update the sort key (timestamp), we cannot do update query
+                # we need to delete the record and insert a new one.
+
+                print('Deleting data in the table')
+                sprinkler_table.delete_item(
                     Key={
-                        'sprinkler_id': sprinkler_id
-                    },
-                    UpdateExpression='SET sprinkler_status = :val1',
-                    ExpressionAttributeValues={
-                        ':val1': 'ON'
+                        'sprinkler_id': sprinkler_id,
+                        'timestamp': sprinkler_timestamp
                     }
                 )
-                print(update_resp)
+                print(
+                    f'Items left in the table are: {sprinkler_table.item_count}')
+                sprinkler_data.put_item(
+                    Item={
+                        'sprinkler_id': sprinkler_id,
+                        'timestamp': sprinkler_timestamp,
+                        'lat': lat,
+                        'long': long,
+                        'sprinkler_status': 'ON'
+                    }
+                )
+                print('Total items in the table are: ',
+                      sprinkler_table.item_count)
+                # update_resp = sprinkler_table.update_item(
+                #     Key={
+                #         'sprinkler_id': sprinkler_id
+                #     },
+                #     UpdateExpression='SET sprinkler_status = :val1',
+                #     ExpressionAttributeValues={
+                #         ':val1': 'ON'
+                #     }
+                # )
+                # print(update_resp)
 
                 # publish to iot core
                 # # chanage required for topic. need to check

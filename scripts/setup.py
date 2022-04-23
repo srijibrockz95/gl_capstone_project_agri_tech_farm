@@ -5,8 +5,7 @@ import boto3
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key, Attr
 import json
-import AWSIoTPythonSDK
-import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
+from datetime import datetime
 
 
 class setup:
@@ -88,16 +87,18 @@ class setup:
                     'AttributeName': 'sprinkler_id',
                     'KeyType': 'HASH'
                 },
-
-                # },
-                # {
-                #     'AttributeName': 'sprinkler_status',
-                #     'KeyType': 'RANGE'
-                # }
+                {
+                    'AttributeName': 'timestamp',
+                    'KeyType': 'RANGE'
+                }
             ],
             AttributeDefinitions=[
                 {
                     'AttributeName': 'sprinkler_id',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'timestamp',
                     'AttributeType': 'S'
                 }
             ],
@@ -112,6 +113,7 @@ class setup:
         table = dynamodb.Table('sprinkler_data')
         latitude = 28.5355
         longitude = 77.3910
+        timestamp = str(datetime.now())
         for i in range(1, 6):
             raw_data = {
                 # The PK and the sort keys are mandatory
@@ -119,7 +121,8 @@ class setup:
                 'sprinkler_status': 'OFF',
                 # Due to the schemaless nature the following keys are not required in the table definition
                 'latitude': latitude,
-                'longitude': longitude
+                'longitude': longitude,
+                'timestamp': timestamp
             }
             ddb_data = json.loads(json.dumps(raw_data), parse_float=Decimal)
             table.put_item(
