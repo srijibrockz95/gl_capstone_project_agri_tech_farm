@@ -7,28 +7,33 @@ CREATE OR REPLACE STREAM "AGGREGATE_SQL_STREAM" (
     min_temperature REAL,
     avg_moisture REAL,
     max_moisture REAL,
-    min_moisture REAL
+    min_moisture REAL,
+    lat REAL,
+    long REAL
 );
 
 CREATE OR REPLACE  PUMP "STREAM_AGGREGATE_PUMP" AS INSERT INTO "AGGREGATE_SQL_STREAM"
 -- Aggregate function COUNT|AVG|MAX|MIN|SUM|STDDEV_POP|STDDEV_SAMP|VAR_POP|VAR_SAMP)
 SELECT STREAM "sprinkler_id", "sensor_id", 
 STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '30' SECOND) as "sensor_timestamp", 
+"lat", "long",
 avg("sensor_temperature") as "avg_temperature", max("sensor_temperature") as "max_temperature", 
 min("sensor_temperature") as "min_temperature", avg("sensor_moisture") as "avg_moisture", 
 max("sensor_moisture") as "max_moisture", min("sensor_moisture") as "min_moisture"
 FROM "SOURCE_SQL_STREAM_001"
 -- Uses a 10-second tumbling time window
-GROUP BY "sprinkler_id", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '30' SECOND);
+GROUP BY "sprinkler_id", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '30' SECOND),"lat", "long";
 
 CREATE OR REPLACE STREAM "ANOMALY_SQL_STREAM" (
     sprinkler_id VARCHAR(16),
     sensor_id VARCHAR(8),
     sensor_timestamp TIMESTAMP,
     avg_temperature REAL,
-    avg_moisture REAL
+    avg_moisture REAL,
+    lat REAL,
+    long REAL
 );
 CREATE OR REPLACE  PUMP "STREAM_ANOMALY_PUMP" AS INSERT INTO "ANOMALY_SQL_STREAM"
-SELECT STREAM sprinkler_id, sensor_id, sensor_timestamp, avg_temperature, avg_moisture
+SELECT STREAM sprinkler_id, sensor_id, sensor_timestamp, avg_temperature, avg_moisture, lat, long
 FROM AGGREGATE_SQL_STREAM
 WHERE avg_temperature >= 20 and avg_moisture <= 60;
