@@ -1,7 +1,5 @@
-from logging import log
 import boto3
 from config import *
-import subprocess
 import json
 import glob
 import time
@@ -17,13 +15,15 @@ class AWSIoTThing:
     """
     count = 0
 
-    def __init__(self, THING_NAME_PREFIX, THING_TYPE_NAME, group_number, THING_GROUP_NAME_PREFIX):
-        self.thing_type_name = THING_TYPE_NAME
-        self.thing_name_prefix = THING_NAME_PREFIX
+    def __init__(self, thing_name_prefix, thing_type_name, group_number, thing_group_name_prefix, lat, long):
+        self.thing_type_name = thing_type_name
+        self.thing_name_prefix = thing_name_prefix
         self.thing_group_count = group_number
-        self.thing_group_name_prefix = THING_GROUP_NAME_PREFIX
+        self.thing_group_name_prefix = thing_group_name_prefix
         self.group_name = self.thing_group_name_prefix + str(self.thing_group_count)
         self.name = self.thing_name_prefix + str(AWSIoTThing.count)
+        self.lat = lat
+        self.long = long
         self.id = AWSIoTThing.count
         AWSIoTThing.count += 1
 
@@ -45,14 +45,14 @@ def aws_iot_core_create_policy():
     policies_count = len(policies["policyNames"])
     if policies_count == 0:
         logger_aws_iot_core.info(
-            f"\t\tThere are no policiy registered. Creating a new one")
+            f"\t\tThere are no policy registered. Creating a new one")
         f = open(PATH_TO_POLICY, "r")
-        policyDoc_str = f.read()
-        policyName = "general_policy"
+        policy_doc_str = f.read()
+        policy_name = "general_policy"
         iot_client.create_policy(
-            policyName='free_policy', policyDocument=policyDoc_str)
+            policyName='free_policy', policyDocument=policy_doc_str)
         logger_aws_iot_core.info(
-            f"\t\tPolicy {policyName} is succesfully created.")
+            f"\t\tPolicy {policy_name} is successfully created.")
 
     else:
         logger_aws_iot_core.info(
@@ -68,11 +68,16 @@ def create_provision_file():
     # Create things
     things = [None] * THING_COUNT
     group_number = 1
+    latitude = 28.5355
+    longitude = 77.3910
     for i in range(THING_COUNT):
         if group_number <= THING_GROUP_COUNT:
             if ((i - group_number) / group_number) == 3:
                 group_number += 1
-        things[i] = AWSIoTThing(THING_NAME_PREFIX, THING_TYPE_NAME, group_number, THING_GROUP_NAME_PREFIX)
+        things[i] = AWSIoTThing(THING_NAME_PREFIX, THING_TYPE_NAME, group_number, THING_GROUP_NAME_PREFIX, latitude,
+                                longitude)
+        latitude += 1
+        longitude += 1
 
     # Clear the provisioning json file by simply opening for writing
     bulk_provision_file = PATH_TO_PROVISION
@@ -84,23 +89,13 @@ def create_provision_file():
 
     # Loop through things and create a provision data for each thing
     for thing in things:
-        message = {"ThingName": thing.name,
-                   "ThingTypeName": thing.thing_type_name, "ThingId": thing.id, "GroupName": thing.group_name}
+        message = {"ThingName": thing.name, "ThingTypeName": thing.thing_type_name, "ThingId": thing.id,
+                   "GroupName": thing.group_name, "lat": thing.lat, "long": thing.long}
         json.dump(message, f)
         f.write("\n")
 
     # Close the file after operation
     f.close()
-
-
-def aws_list_roles():
-    # Listing IAM Roles
-    client = boto3.client('iam')
-    response = client.list_roles()
-    logger_aws_iot_core.info('Listing iam roles ...')
-    for Role in response['Roles']:
-        logger_aws_iot_core.info('RoleName: ' + Role['RoleName'])
-        logger_aws_iot_core.info('RoleArn: ' + Role['Arn'] + "\n")
 
 
 def aws_iot_core_create_bulk_things():
@@ -118,11 +113,14 @@ def aws_iot_core_create_bulk_things():
 
     # Step 0: Create a thing type prior to start thing registration
     logger_aws_iot_core.info(f"\tChecking thingType")
-    thingType_name = "soil_sensor"
-    thingTypes = aws_iot_core_get_all_thing_types()
-    if thingType_name in thingTypes["thingTypeNames"]:
+    thing_type_name = "soil_sensor"
+    thing_types = aws_iot_core_get_all_thing_types()
+    if thing_type_name in thing_types["thingTypeNames"]:
         logger_aws_iot_core.info(
-            f"\t\tThing type Name {thingType_name} is already present no need to crete new one.")
+            f"\t\tThing type Name {thing_type_name} is already present no need to crete new one.")
+        iot_client.deprecate_thing_type(thingTypeName=thing_type_name, undoDeprecate=True)
+        logger_aws_iot_core.info(
+            f"\t\tUn-deprecating thing type {thing_type_name}")
     else:
         iot_client.create_thing_type(thingTypeName='soil_sensor', thingTypeProperties={
             'thingTypeDescription': 'Generic soil_sensor thing type'})
@@ -139,11 +137,11 @@ def aws_iot_core_create_bulk_things():
     # Step 2: Start things registration task
     response = iot_client.start_thing_registration_task(templateBody=f.read(
     ), inputFileBucket=BUCKET_NAME, inputFileKey=OBJ_PROVISION_FILE, roleArn=ROLE_ARN)
-    taskId = response['taskId']
+    taskid = response['taskId']
 
     # Step 3: describe_thing_registration_task
     while 1:
-        response = iot_client.describe_thing_registration_task(taskId=taskId)
+        response = iot_client.describe_thing_registration_task(taskId=taskid)
         response_status = response['status']
         if response_status == "Completed":
             logger_aws_iot_core.info(
@@ -183,7 +181,7 @@ def add_thing_to_thing_group():
 
 def aws_s3_reset():
     """"
-    Resets all the buckets and contents in the specified IOT_CORE_REGION
+    Resets the contents of the bucket and the bucket itself
     """
 
     # Create client
@@ -217,7 +215,7 @@ def aws_s3_reset():
 
 def aws_iot_core_get_all_policies(detail=False):
     """
-    returns all the policies registerd in the aws iot core
+    returns all the policies registered in the aws iot core
     """
 
     # Return parameters
@@ -304,7 +302,7 @@ def aws_iot_core_get_all_certificates(detail=False):
             certificateArns.append(certificate['certificateArn'])
             certificateIds.append(certificate['certificateId'])
 
-        # Print details if the 'detail'flag is set to True
+        # Print details if the 'detail' flag is set to True
         if detail:
             logger_aws_iot_core.info(json.dumps(
                 response['certificates'], indent=2, default=str))
@@ -355,7 +353,8 @@ def aws_iot_core_get_all_things(detail=False):
         things_count = things_count + len(response['things'])
         if detail:
             logger_aws_iot_core.info(
-                f"\t{len(response['things'])} things are found on the {page_count + 1}. page. Checking the next page ...")
+                f"\t{len(response['things'])} things are found on the {page_count + 1}. page. "
+                f"Checking the next page ...")
 
         # Append found things to the lists
         for thing in response['things']:
@@ -447,7 +446,7 @@ def aws_iot_core_get_all_thing_types(detail=False):
 def aws_iot_core_delete_all_policies():
     """
     Deletes all the registered things, certificates and policies in the client IOT_CORE_REGION.
-    Doesn't delete thing types hence it takes 5 mins to delete it
+    Doesn't delete thing types hence it takes 5 minutes to delete it
     """
 
     # # Create client
@@ -462,12 +461,12 @@ def aws_iot_core_delete_all_policies():
     policies_count = len(policies["policyNames"])
     if policies_count == 0:
         logger_aws_iot_core.info(
-            f"\t\tThere are no policiy registered. Exiting")
+            f"\t\tThere are no policy registered. Exiting")
         return 0
     else:
         logger_aws_iot_core.info(f"\t\t{policies_count} policies are found.")
 
-    # Step : Deleting policies
+    # Step 1: Deleting policies
     logger_aws_iot_core.info("\tStep 2: Deleting policies ...")
     for policyName in policies["policyNames"]:
         iot_client.delete_policy(policyName=policyName)
@@ -476,7 +475,7 @@ def aws_iot_core_delete_all_policies():
 
 def aws_iot_core_create_certificates():
     """Create certificate/s for the things registered in the IoT core.
-    :param set_unique: Flag to create unique certificates for each thing or not.
+    param 'SET_CERT_UNIQUE' Flag to create unique certificates for each thing or not.
     """
 
     # Create client
@@ -490,18 +489,18 @@ def aws_iot_core_create_certificates():
     logger_aws_iot_core.info(
         f"\tStep 0: Deleting existing key and certificates in the local directory")
     logger_aws_iot_core.info("\t\tDeleting private keys ...")
-    for file in glob.glob("../secure/keys/private/*"):
-        logger_aws_iot_core.info("\t\tDeleting the file {file}")
+    for file in glob.glob("../secure/keys/private/*.key"):
+        logger_aws_iot_core.info(f"\t\tDeleting the file {file}")
         os.remove(file)
 
     logger_aws_iot_core.info("\t\tDeleting public keys ...")
-    for file in glob.glob("../secure/keys/public/*"):
-        logger_aws_iot_core.info("\t\tDeleting the file {file}")
+    for file in glob.glob("../secure/keys/public/*.key"):
+        logger_aws_iot_core.info(f"\t\tDeleting the file {file}")
         os.remove(file)
 
     logger_aws_iot_core.info("\t\tDeleting certificates ...")
-    for file in glob.glob("../secure/certificates/*"):
-        logger_aws_iot_core.info("\t\tDeleting the file {file}")
+    for file in glob.glob("../secure/certificates/*.crt"):
+        logger_aws_iot_core.info(f"\t\tDeleting the file {file}")
         os.remove(file)
 
     # Get things registered in the IoT core
@@ -700,10 +699,30 @@ def aws_iot_core_delete_all_thing_groups():
     # Create client
     iot_client = boto3.client('iot', IOT_CORE_REGION)
 
-    for i in range(1, THING_GROUP_COUNT + 1):
-        group_name = THING_GROUP_NAME_PREFIX + str(i)
-        iot_client.delete_thing_group(thingGroupName=group_name)
-        logger_aws_iot_core.info(f"\t\tDeleting thing group: {group_name}")
+    # Step 0: Get the things
+    logger_aws_iot_core.info(f"\tStep 0: Getting thing groups ...")
+    response = iot_client.list_thing_groups(
+        maxResults=pageSize
+    )
+    logger_aws_iot_core.info(
+        f"\tStep 1: Deleting the thing groups from iot-core registry ...")
+    for group_name in response["thingGroups"]:
+        iot_client.delete_thing_group(thingGroupName=group_name["groupName"])
+        logger_aws_iot_core.info(f'\t\tDeleting thing group: {group_name["groupName"]}')
+
+    while 1:
+
+        # Check if nextToken is present for next search pages
+        if "nextToken" in response:
+            response = iot_client.list_thing_groups(
+                maxResults=pageSize,
+                nextToken=response["nextToken"]
+            )
+            for group_name in response["thingGroups"]:
+                iot_client.delete_thing_group(thingGroupName=group_name["groupName"])
+                logger_aws_iot_core.info(f'\t\tDeleting thing group: {group_name["groupName"]}')
+        else:
+            break
 
 
 def aws_iot_core_delete_all_things(detail=True):
@@ -751,19 +770,35 @@ def aws_iot_core_delete_all_things(detail=True):
         iot_client.delete_thing(thingName=thingName)
         logger_aws_iot_core.info(f"\t\tDeleting thingName: {thingName}")
 
+    # Step 3: Deprecate & delete thing type from IoT Core registry
+    logger_aws_iot_core.info(f"\t\tDeprecating thing type {THING_TYPE_NAME}")
+    response = iot_client.list_thing_types(
+        maxResults=pageSize,
+        thingTypeName=THING_TYPE_NAME
+    )
+    if len(response["thingTypes"]) > 0:
+        response = iot_client.deprecate_thing_type(
+            thingTypeName=THING_TYPE_NAME
+        )
+        print(response)
+        # response = iot_client.delete_thing_type(
+        #     thingTypeName=THING_TYPE_NAME
+        # )
+        # print(response)
+
 
 def aws_s3_config():
     """Upload the provision file to an S3 bucket
-    :param file_name: File to upload
-    :param bucket: Bucket to upload to
-    :param object_name: S3 object name. If not specified then file_name is used
-    :return: True if file was uploaded, else False
+    param 'file_name': File to upload
+    param 'bucket': Bucket to upload to
+    param 'object_name': S3 object name. If not specified then file_name is used
+    return: True if file was uploaded, else False
     """
 
     # Create client
     s3_client = boto3.client('s3', S3_REGION)
 
-    # Parameter used to detect if bucket is alread created
+    # Parameter used to detect if bucket is already created
     is_bucket_exist = False
 
     # Log info
@@ -782,7 +817,7 @@ def aws_s3_config():
         else:
             logger_aws_iot_core.info(f"\t\tFound S3 Bucket: {bucket['Name']}")
 
-    # Step 1: Create a bucket. If bucket namaspace is not unique , you need to change the name.
+    # Step 1: Create a bucket. If bucket namespace is not unique , you need to change the name.
     if(not is_bucket_exist):
         try:
             s3_client.create_bucket(Bucket=BUCKET_NAME)
@@ -798,23 +833,7 @@ def aws_s3_config():
     # Step 3: Upload the provision file
     s3_client.put_object(Body=open(PATH_TO_PROVISION, 'rb'),
                          Bucket=BUCKET_NAME, Key=obj_provision_file)
-    logger_aws_iot_core.info(f"\tProvision file is succesfully uploaded")
-
-    #     obj_project = 'smart-waste-management/'
-    #     obj_secure = obj_project+'secure/'
-    #     obj_private_keys = obj_secure+'keys/private'
-    #     obj_provision = obj_secure+'provision/'
-    #     obj_certificates = obj_secure+'certificates/'
-    #     obj_provision_file = obj_provision+PROVISION_FILE_NAME
-
-    #     # Create Objects in the bucket
-    #     s3_client.put_object(Bucket=BUCKET_NAME, Key=obj_project)
-    #     s3_client.put_object(Bucket=BUCKET_NAME, Key=obj_secure)
-    #     s3_client.put_object(Bucket=BUCKET_NAME, Key=obj_private_keys)
-    #     s3_client.put_object(Bucket=BUCKET_NAME, Key=obj_certificates)
-    #     s3_client.put_object(Bucket=BUCKET_NAME, Key=obj_provision)
-    #     s3_client.put_object(Body=open(PATH_TO_PROVISION, 'rb'),
-    #                          Bucket=BUCKET_NAME, Key=obj_provision_file)
+    logger_aws_iot_core.info(f"\tProvision file is successfully uploaded")
 
 
 def aws_iot_core_attach_certificates(detail=True):

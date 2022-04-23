@@ -1,20 +1,20 @@
-{"ThingName": "Sensor0", "ThingTypeName": "soil_sensor", "ThingId": 0, "GroupName": "Sprinkler1"}
-{"ThingName": "Sensor1", "ThingTypeName": "soil_sensor", "ThingId": 1, "GroupName": "Sprinkler1"}
-{"ThingName": "Sensor2", "ThingTypeName": "soil_sensor", "ThingId": 2, "GroupName": "Sprinkler1"}
-{"ThingName": "Sensor3", "ThingTypeName": "soil_sensor", "ThingId": 3, "GroupName": "Sprinkler1"}
-{"ThingName": "Sensor4", "ThingTypeName": "soil_sensor", "ThingId": 4, "GroupName": "Sprinkler2"}
-{"ThingName": "Sensor5", "ThingTypeName": "soil_sensor", "ThingId": 5, "GroupName": "Sprinkler2"}
-{"ThingName": "Sensor6", "ThingTypeName": "soil_sensor", "ThingId": 6, "GroupName": "Sprinkler2"}
-{"ThingName": "Sensor7", "ThingTypeName": "soil_sensor", "ThingId": 7, "GroupName": "Sprinkler2"}
-{"ThingName": "Sensor8", "ThingTypeName": "soil_sensor", "ThingId": 8, "GroupName": "Sprinkler3"}
-{"ThingName": "Sensor9", "ThingTypeName": "soil_sensor", "ThingId": 9, "GroupName": "Sprinkler3"}
-{"ThingName": "Sensor10", "ThingTypeName": "soil_sensor", "ThingId": 10, "GroupName": "Sprinkler3"}
-{"ThingName": "Sensor11", "ThingTypeName": "soil_sensor", "ThingId": 11, "GroupName": "Sprinkler3"}
-{"ThingName": "Sensor12", "ThingTypeName": "soil_sensor", "ThingId": 12, "GroupName": "Sprinkler4"}
-{"ThingName": "Sensor13", "ThingTypeName": "soil_sensor", "ThingId": 13, "GroupName": "Sprinkler4"}
-{"ThingName": "Sensor14", "ThingTypeName": "soil_sensor", "ThingId": 14, "GroupName": "Sprinkler4"}
-{"ThingName": "Sensor15", "ThingTypeName": "soil_sensor", "ThingId": 15, "GroupName": "Sprinkler4"}
-{"ThingName": "Sensor16", "ThingTypeName": "soil_sensor", "ThingId": 16, "GroupName": "Sprinkler5"}
-{"ThingName": "Sensor17", "ThingTypeName": "soil_sensor", "ThingId": 17, "GroupName": "Sprinkler5"}
-{"ThingName": "Sensor18", "ThingTypeName": "soil_sensor", "ThingId": 18, "GroupName": "Sprinkler5"}
-{"ThingName": "Sensor19", "ThingTypeName": "soil_sensor", "ThingId": 19, "GroupName": "Sprinkler5"}
+{"ThingName": "Sensor0", "ThingTypeName": "soil_sensor", "ThingId": 0, "GroupName": "Sprinkler1", "lat": 28.5355, "long": 77.391}
+{"ThingName": "Sensor1", "ThingTypeName": "soil_sensor", "ThingId": 1, "GroupName": "Sprinkler1", "lat": 29.5355, "long": 78.391}
+{"ThingName": "Sensor2", "ThingTypeName": "soil_sensor", "ThingId": 2, "GroupName": "Sprinkler1", "lat": 30.5355, "long": 79.391}
+{"ThingName": "Sensor3", "ThingTypeName": "soil_sensor", "ThingId": 3, "GroupName": "Sprinkler1", "lat": 31.5355, "long": 80.391}
+{"ThingName": "Sensor4", "ThingTypeName": "soil_sensor", "ThingId": 4, "GroupName": "Sprinkler2", "lat": 32.5355, "long": 81.391}
+{"ThingName": "Sensor5", "ThingTypeName": "soil_sensor", "ThingId": 5, "GroupName": "Sprinkler2", "lat": 33.5355, "long": 82.391}
+{"ThingName": "Sensor6", "ThingTypeName": "soil_sensor", "ThingId": 6, "GroupName": "Sprinkler2", "lat": 34.5355, "long": 83.391}
+{"ThingName": "Sensor7", "ThingTypeName": "soil_sensor", "ThingId": 7, "GroupName": "Sprinkler2", "lat": 35.5355, "long": 84.391}
+{"ThingName": "Sensor8", "ThingTypeName": "soil_sensor", "ThingId": 8, "GroupName": "Sprinkler3", "lat": 36.5355, "long": 85.391}
+{"ThingName": "Sensor9", "ThingTypeName": "soil_sensor", "ThingId": 9, "GroupName": "Sprinkler3", "lat": 37.5355, "long": 86.391}
+{"ThingName": "Sensor10", "ThingTypeName": "soil_sensor", "ThingId": 10, "GroupName": "Sprinkler3", "lat": 38.5355, "long": 87.391}
+{"ThingName": "Sensor11", "ThingTypeName": "soil_sensor", "ThingId": 11, "GroupName": "Sprinkler3", "lat": 39.5355, "long": 88.391}
+{"ThingName": "Sensor12", "ThingTypeName": "soil_sensor", "ThingId": 12, "GroupName": "Sprinkler4", "lat": 40.5355, "long": 89.391}
+{"ThingName": "Sensor13", "ThingTypeName": "soil_sensor", "ThingId": 13, "GroupName": "Sprinkler4", "lat": 41.5355, "long": 90.391}
+{"ThingName": "Sensor14", "ThingTypeName": "soil_sensor", "ThingId": 14, "GroupName": "Sprinkler4", "lat": 42.5355, "long": 91.391}
+{"ThingName": "Sensor15", "ThingTypeName": "soil_sensor", "ThingId": 15, "GroupName": "Sprinkler4", "lat": 43.5355, "long": 92.391}
+{"ThingName": "Sensor16", "ThingTypeName": "soil_sensor", "ThingId": 16, "GroupName": "Sprinkler5", "lat": 44.5355, "long": 93.391}
+{"ThingName": "Sensor17", "ThingTypeName": "soil_sensor", "ThingId": 17, "GroupName": "Sprinkler5", "lat": 45.5355, "long": 94.391}
+{"ThingName": "Sensor18", "ThingTypeName": "soil_sensor", "ThingId": 18, "GroupName": "Sprinkler5", "lat": 46.5355, "long": 95.391}
+{"ThingName": "Sensor19", "ThingTypeName": "soil_sensor", "ThingId": 19, "GroupName": "Sprinkler5", "lat": 47.5355, "long": 96.391}
