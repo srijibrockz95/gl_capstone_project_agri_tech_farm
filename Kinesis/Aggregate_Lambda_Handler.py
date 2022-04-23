@@ -2,7 +2,6 @@ import json
 import boto3
 import base64
 from pprint import pprint
-import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
 
 
 def lambda_handler(event, context):
@@ -23,7 +22,9 @@ def lambda_handler(event, context):
         avg_moisture = float(readings['AVG_MOISTURE'])
         max_moisture = float(readings['MAX_MOISTURE'])
         min_moisture = float(readings['MIN_MOISTURE'])
-        table.put_item(Item={'sprinklerid': sprinklerid, 'sensor_id': sensor_id, 'sensor_timestamp': sensor_timestamp,
+        lat = float(readings['LAT'])
+        long = float(readings['LONG'])
+        table.put_item(Item={'sprinkler_id': sprinklerid, 'sensor_id': sensor_id, 'sensor_timestamp': sensor_timestamp,
                              'avg_temp': str(avg_temp), 'max_temp': str(max_temp),
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
-                             'min_moisture': str(min_moisture)})
+                             'min_moisture': str(min_moisture), 'lat': str(lat), 'long': str(long)})

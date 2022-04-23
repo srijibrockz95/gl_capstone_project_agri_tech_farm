@@ -26,7 +26,8 @@ def Anomaly_handler(event, context):
 
     # iot-core
     # import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
-    iot_client = boto3.client('iot-data', region_name='us-east-1')
+    iot_client = boto3.client(
+        'iot-data', region_name='us-east-1', verify=False)
     i = 0
     try:
 
@@ -43,7 +44,8 @@ def Anomaly_handler(event, context):
             timestamp = readings['SENSOR_TIMESTAMP']
             temperature = str(readings['AVG_TEMPERATURE'])
             moisture = str(readings['AVG_MOISTURE'])
-
+            lat = float(readings['LAT'])
+            long = float(readings['LONG'])
             # get sprinkler lat,long and status values
             response = sprinkler_table.query(
                 KeyConditionExpression=Key('sprinkler_id').eq(sprinkler_id))
@@ -52,10 +54,11 @@ def Anomaly_handler(event, context):
             lat = sprinkler_data[0]['latitude']
             long = sprinkler_data[0]['longitude']
             sprinkler_status = sprinkler_data[0]['sprinkler_status']
+            sprinkler_timestamp = sprinkler_data[0]['timestamp']
 
             print(f"lat and long: {float(lat)},{float(long)}")
 
-            # # get owm weather data
+            # get owm weather data
             mgr = owm.weather_manager()
             print(f"weather mgr: {mgr}")
             one_call = mgr.one_call(lat=float(lat), lon=float(long))
@@ -79,7 +82,7 @@ def Anomaly_handler(event, context):
 
                 # insert both anomaly data from sensor and owm in dynamodb
                 sensor_anomaly = {'data_type': 'sensor_anomaly', 'sprinkler_id': sprinkler_id, 'sensor_id': sensor_id, 'timestamp': timestamp,
-                                  'temperature': temperature, 'moisture': moisture}
+                                  'temperature': temperature, 'moisture': moisture, 'lat': lat, 'long': long}
                 owm_anomaly = {'data_type': 'owm_anomaly', 'timestamp': owm_timestamp,
                                'temperature': temperature, 'humidity': owm_humidity}
                 print(f"owm_anomaly: {owm_anomaly}")
@@ -101,25 +104,48 @@ def Anomaly_handler(event, context):
                 print("sns published. check email")
 
                 # update sprinkler status in sprinkler table.
-                update_resp = sprinkler_table.update_item(
+                # since we need to update the sort key (timestamp), we cannot do update query
+                # we need to delete the record and insert a new one.
+
+                print('Deleting data in the table')
+                sprinkler_table.delete_item(
                     Key={
-                        'sprinkler_id': sprinkler_id
-                    },
-                    UpdateExpression='SET sprinkler_status = :val1',
-                    ExpressionAttributeValues={
-                        ':val1': 'ON'
+                        'sprinkler_id': sprinkler_id,
+                        'timestamp': sprinkler_timestamp
                     }
                 )
-                print(update_resp)
+                print(
+                    f'Items left in the table are: {sprinkler_table.item_count}')
+                sprinkler_data.put_item(
+                    Item={
+                        'sprinkler_id': sprinkler_id,
+                        'timestamp': sprinkler_timestamp,
+                        'lat': lat,
+                        'long': long,
+                        'sprinkler_status': 'ON'
+                    }
+                )
+                print('Total items in the table are: ',
+                      sprinkler_table.item_count)
+                # update_resp = sprinkler_table.update_item(
+                #     Key={
+                #         'sprinkler_id': sprinkler_id
+                #     },
+                #     UpdateExpression='SET sprinkler_status = :val1',
+                #     ExpressionAttributeValues={
+                #         ':val1': 'ON'
+                #     }
+                # )
+                # print(update_resp)
 
-                # # publish to iot core
+                # publish to iot core
                 # # chanage required for topic. need to check
-                # response = iot_client.publish(topic=f'weather_data', qos=1, payload={
-                #     json.dumps(sensor_anomaly)})
-                # # , json.dumps(owm_anomaly)
-                # print(response)
+                response = iot_client.publish(
+                    topic='weather_data', payload=json.dumps(sensor_anomaly))
+
+                print(response)
 
             else:
                 print(f"No anomaly in OWM data: {owm_anomaly}")
     except Exception as e:
-        print(f'e')
+        print(e)
