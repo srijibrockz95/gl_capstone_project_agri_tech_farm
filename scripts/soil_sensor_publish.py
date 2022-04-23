@@ -21,7 +21,7 @@ class AWS():
     # This method will obviosuly be called while creating the instance
     # It will create the MQTT client for AWS using the credentials
     # Connect operation will make sure that connection is established between the device and AWS MQTT
-    def __init__(self, client, group, certificate, private_key,lat, long):
+    def __init__(self, client, group, certificate, private_key, lat, long):
         self.client_id = client
         self.device_id = client
         self.lat = lat
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     for device in thing_list:
         print(device["ThingName"], type(device["ThingName"]))
         device["ThingName"] = AWS(device["ThingName"], device["GroupName"], device["ThingName"]+".pem.crt",
-                                  device["ThingName"]+".pem.key", device["sensor_lat"], device["sensor_long"])
+                                  device["ThingName"]+".pem.key", device["lat"], device["long"])
 
 
     # Publish to the same topic in a loop forever for all devices/sensors
