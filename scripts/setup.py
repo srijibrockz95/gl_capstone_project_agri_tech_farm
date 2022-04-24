@@ -118,8 +118,8 @@ def insert_sprinkler_data(dynamodb):
             'sprinkler_id': f'Sprinkler{i}',
             'sprinkler_status': 'OFF',
             # Due to the schemaless nature the following keys are not required in the table definition
-            'latitude': latitude,
-            'longitude': longitude,
+            'sprinkler_lat': latitude,
+            'sprinkler_long': longitude,
             'timestamp': timestamp
         }
         ddb_data = json.loads(json.dumps(raw_data), parse_float=Decimal)
