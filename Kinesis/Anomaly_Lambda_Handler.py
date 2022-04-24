@@ -50,8 +50,8 @@ def Anomaly_handler(event, context):
                 KeyConditionExpression=Key('sprinkler_id').eq(sprinkler_id))
             sprinkler_data = response['Items']
             # pprint(sprinkler_data)
-            lat = sprinkler_data[0]['latitude']
-            long = sprinkler_data[0]['longitude']
+            sprinkler_lat = sprinkler_data[0]['sprinkler_lat']
+            sprinkler_long = sprinkler_data[0]['sprinkler_long']
             sprinkler_status = sprinkler_data[0]['sprinkler_status']
             sprinkler_timestamp = sprinkler_data[0]['timestamp']
 
@@ -126,8 +126,8 @@ def Anomaly_handler(event, context):
                     Item={
                         'sprinkler_id': sprinkler_id,
                         'timestamp':  current_datetime,
-                        'lat': lat,
-                        'long': long,
+                        'sprinkler_lat': sprinkler_lat,
+                        'sprinkler_long': sprinkler_long,
                         'sprinkler_status': 'ON'
                     }
                 )
