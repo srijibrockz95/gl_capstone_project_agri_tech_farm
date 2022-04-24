@@ -74,8 +74,8 @@ def change_sprinkler_status_off():
                 Item={
                     'sprinkler_id': item['sprinkler_id'],
                     'timestamp':  current_datetime,
-                    'lat': item['sensor_lat'],
-                    'long': item['sensor_long'],
+                    'sprinkler_lat': item['sprinkler_lat'],
+                    'sprinkler_long': item['sprinkler_long'],
                     'sprinkler_status': 'OFF'
                 }
             )
