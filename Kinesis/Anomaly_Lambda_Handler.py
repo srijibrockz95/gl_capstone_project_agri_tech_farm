@@ -43,8 +43,8 @@ def Anomaly_handler(event, context):
             timestamp = readings['SENSOR_TIMESTAMP']
             temperature = str(readings['AVG_TEMPERATURE'])
             moisture = str(readings['AVG_MOISTURE'])
-            lat = float(readings['LAT'])
-            long = float(readings['LONG'])
+            sensor_lat = float(readings['SENSOR_LAT'])
+            sensor_long = float(readings['SENSOR_LONG'])
             # get sprinkler lat,long and status values
             response = sprinkler_table.query(
                 KeyConditionExpression=Key('sprinkler_id').eq(sprinkler_id))
@@ -81,7 +81,7 @@ def Anomaly_handler(event, context):
 
                 # insert both anomaly data from sensor and owm in dynamodb
                 sensor_anomaly = {'data_type': 'sensor_anomaly', 'sprinkler_id': sprinkler_id, 'sensor_id': sensor_id, 'timestamp': timestamp,
-                                  'temperature': temperature, 'moisture': moisture, 'lat': lat, 'long': long}
+                                  'temperature': temperature, 'moisture': moisture, 'sensor_lat': sensor_lat, 'sensor_long': sensor_long}
                 owm_anomaly = {'data_type': 'owm_anomaly', 'timestamp': owm_timestamp,
                                'temperature': temperature, 'humidity': owm_humidity}
                 print(f"owm_anomaly: {owm_anomaly}")
