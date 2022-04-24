@@ -25,12 +25,12 @@ def lambda_handler(event, context):
         avg_moisture = float(readings['AVG_MOISTURE'])
         max_moisture = float(readings['MAX_MOISTURE'])
         min_moisture = float(readings['MIN_MOISTURE'])
-        lat = float(readings['LAT'])
-        long = float(readings['LONG'])
+        sensor_lat = float(readings['SENSOR_LAT'])
+        sensor_long = float(readings['SENSOR_LONG'])
         table.put_item(Item={'sprinkler_id': sprinklerid, 'sensor_id': sensor_id, 'sensor_timestamp': sensor_timestamp,
                              'avg_temp': str(avg_temp), 'max_temp': str(max_temp),
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
-                             'min_moisture': str(min_moisture), 'lat': str(lat), 'long': str(long)})
+                             'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
 
     change_sprinkler_status_off()
 
@@ -74,8 +74,8 @@ def change_sprinkler_status_off():
                 Item={
                     'sprinkler_id': item['sprinkler_id'],
                     'timestamp':  current_datetime,
-                    'lat': item['lat'],
-                    'long': item['long'],
+                    'lat': item['sensor_lat'],
+                    'long': item['sensor_long'],
                     'sprinkler_status': 'OFF'
                 }
             )
