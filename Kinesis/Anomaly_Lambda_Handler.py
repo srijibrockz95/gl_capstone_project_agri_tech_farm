@@ -55,12 +55,12 @@ def Anomaly_handler(event, context):
             sprinkler_status = sprinkler_data[0]['sprinkler_status']
             sprinkler_timestamp = sprinkler_data[0]['timestamp']
 
-            print(f"lat and long: {float(lat)},{float(long)}")
+            print(f"lat and long: {float(sprinkler_lat)},{float(sprinkler_long)}")
 
             # get owm weather data
             mgr = owm.weather_manager()
             print(f"weather mgr: {mgr}")
-            one_call = mgr.one_call(lat=float(lat), lon=float(long))
+            one_call = mgr.one_call(lat=float(sprinkler_lat), lon=float(sprinkler_long))
             print(f"one_call: {one_call}")
             current_data = json.dumps(one_call.current.__dict__)
 
