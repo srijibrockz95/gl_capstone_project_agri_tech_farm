@@ -28,3 +28,12 @@ def lambda_handler(event, context):
                              'avg_temp': str(avg_temp), 'max_temp': str(max_temp),
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
                              'min_moisture': str(min_moisture), 'lat': str(lat), 'long': str(long)})
+
+
+def change_sprinkler_status():
+    # first scan sprinkler table and get all data
+    # loop through all sprinklers and check if the db timestamp is >= 10 mins
+    # (compare with current time)
+    # if yes, turn oFF sprinkler
+    # while turning off update sprinkler_status and timestamp.
+    # so need to delete the record and insert with new values as timestamp is sort key.

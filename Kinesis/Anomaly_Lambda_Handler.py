@@ -96,6 +96,12 @@ def Anomaly_handler(event, context):
                 anomaly_table.put_item(Item=ddb_sensor_anomaly_data)
                 anomaly_table.put_item(Item=ddb_owm_anomaly_data)
 
+                # check in the db if for a particular sprinkler, atleast 3 sensors are in alarm
+                # for the given timestamp
+                # get sprinkler-sensor mapping from s3 bucket
+                # query for the sprinkler-sensor combination for the given timestamp in anomaly table
+                # if the record count is >= 3, send sns, publish to iot, and turn sprinkler ON in db.
+
                 # send sns notification
                 print("SNS starting")
                 message = f"\n Hello, \n\n Weather data anomaly detected on {timestamp} for {sensor_id}.\n\n  {json.dumps(sensor_anomaly)}\n\n  {json.dumps(owm_anomaly)}"
