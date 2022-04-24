@@ -25,7 +25,6 @@ def Anomaly_handler(event, context):
     topic_arn = "arn:aws:sns:us-east-1:212546747799:weather_data_sns_topic"
 
     # iot-core
-    # import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
     iot_client = boto3.client(
         'iot-data', region_name='us-east-1', verify=False)
     i = 0
@@ -122,10 +121,11 @@ def Anomaly_handler(event, context):
                 )
                 print(
                     f'Items left in the table are: {sprinkler_table.item_count}')
-                sprinkler_data.put_item(
+                current_datetime = str(datetime.now())
+                sprinkler_table.put_item(
                     Item={
                         'sprinkler_id': sprinkler_id,
-                        'timestamp': sprinkler_timestamp,
+                        'timestamp':  current_datetime,
                         'lat': lat,
                         'long': long,
                         'sprinkler_status': 'ON'

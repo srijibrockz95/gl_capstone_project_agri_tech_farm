@@ -3,14 +3,10 @@ from decimal import Decimal
 import json
 from datetime import datetime
 
-# object to create dynamodb & sns client
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-sns_client = boto3.client("sns", region_name="us-east-1")
-
 
 # function to create aggregate table
 
-def create_aggregate_data_table():
+def create_aggregate_data_table(dynamodb):
 
     table = dynamodb.create_table(
         TableName='aggregate_data',
@@ -44,7 +40,7 @@ def create_aggregate_data_table():
 
 # function to create anomaly table
 
-def create_anomaly_data_table():
+def create_anomaly_data_table(dynamodb):
 
     table = dynamodb.create_table(
         TableName='anomaly_data',
@@ -78,7 +74,7 @@ def create_anomaly_data_table():
 
 # function to create sprinkler master table
 
-def create_sprinkler_data_table():
+def create_sprinkler_data_table(dynamodb):
     table = dynamodb.create_table(
         TableName='sprinkler_data',
         KeySchema=[
@@ -111,7 +107,7 @@ def create_sprinkler_data_table():
 
 # function to insert data into sprinkler table
 
-def insert_sprinkler_data():
+def insert_sprinkler_data(dynamodb):
     table = dynamodb.Table('sprinkler_data')
     latitude = 28.5355
     longitude = 77.3910
@@ -136,7 +132,7 @@ def insert_sprinkler_data():
 
 # function to create SNS
 
-def create_sns():
+def create_sns(sns_client):
     response = sns_client.create_topic(Name="weather_data_sns_topic")
     topic_arn = response["TopicArn"]
     # Create email subscription
