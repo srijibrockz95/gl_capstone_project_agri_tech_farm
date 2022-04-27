@@ -10,6 +10,7 @@ import sched
 KINESIS_DATA_STREAM = "StreamSource01"
 
 kinesis_handle = boto3.client('kinesis', region_name="us-east-1")
+
 kinesis_response = kinesis_handle.get_shard_iterator(
     StreamName=KINESIS_DATA_STREAM,
     ShardId='shardId-000000000000',
@@ -35,6 +36,8 @@ def publishDummyData(loopCount):
     message['sensor_timestamp'] = timestamp
     message['sensor_temperature'] = temp_value
     message['sensor_moisture'] = moisture_value
+    message['sensor_lat'] = 28.65
+    message['sensor_long'] = 84.0
     messageJson = json.dumps(message)
     print(messageJson)
     response = kinesis_handle.put_record(

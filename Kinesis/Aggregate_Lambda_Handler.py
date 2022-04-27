@@ -51,36 +51,36 @@ def change_sprinkler_status_off():
     response = sprinkler_table.scan()
     for item in response['Items']:
         # convert database string datetime to datetime datatype
-        db_datetime = (datetime.fromisoformat(item['timestamp']))
+
+        print(f"sprinkler_timestamp: {item['sprinkler_timestamp']}")
+
+        db_datetime = (datetime.fromisoformat(item['sprinkler_timestamp']))
+
         current_time = datetime.now()
+        print(f"Current_time: {current_time}")
+
         # (compare with current time)
         duration = current_time-db_datetime
         duration_in_seconds = duration.total_seconds()
         minutes = divmod(duration_in_seconds, 60)[0]
-        if minutes >= 10:
+        print(f"minutes: {minutes}")
+        if minutes >= 0:
             # if yes, turn oFF sprinkler, SNS, IoT MQTT
             # while turning off update sprinkler_status and timestamp.
             # so need to delete the record and insert with new values as timestamp is sort key.
-            print('Deleting data in the table')
-            sprinkler_table.delete_item(
+            print("dynamodb update starting")
+            current_datetime = str(datetime.now())
+            sprinkler_table.update_item(
                 Key={
                     'sprinkler_id': item['sprinkler_id']
-                }
-            )
-            print(
-                f'Items left in the table are: {sprinkler_table.item_count}')
-            current_datetime = str(datetime.now())
-            sprinkler_table.put_item(
-                Item={
-                    'sprinkler_id': item['sprinkler_id'],
-                    'timestamp':  current_datetime,
-                    'sprinkler_lat': item['sprinkler_lat'],
-                    'sprinkler_long': item['sprinkler_long'],
-                    'sprinkler_status': 'OFF'
-                }
-            )
-            print('Total items in the table are: ',
-                  sprinkler_table.item_count)
+
+                },
+                UpdateExpression='SET sprinkler_status = :val1, sprinkler_timestamp = :val2',
+                ExpressionAttributeValues={
+                    ':val1': 'OFF',
+                    ':val2': current_datetime
+
+                })
 
             # send sns notification
             print("SNS starting")
@@ -90,6 +90,7 @@ def change_sprinkler_status_off():
 
             # publish to iot core
             # # chanage required for topic. need to check
+            print("MQTT starting")
             notification = {"message": message}
             response = iot_client.publish(
                 topic='weather_data', payload=json.dumps(notification))
