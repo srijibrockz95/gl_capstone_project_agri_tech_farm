@@ -46,17 +46,18 @@ def create_anomaly_data_table(dynamodb):
         TableName='anomaly_data',
         KeySchema=[
             {
-                'AttributeName': 'data_type',
+                'AttributeName': 'sensor_id',
                 'KeyType': 'HASH'
             },
             {
                 'AttributeName': 'timestamp',
                 'KeyType': 'RANGE'
             }
+
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'data_type',
+                'AttributeName': 'sensor_id',
                 'AttributeType': 'S'
             },
             {
@@ -81,19 +82,11 @@ def create_sprinkler_data_table(dynamodb):
             {
                 'AttributeName': 'sprinkler_id',
                 'KeyType': 'HASH'
-            },
-            {
-                'AttributeName': 'timestamp',
-                'KeyType': 'RANGE'
             }
         ],
         AttributeDefinitions=[
             {
                 'AttributeName': 'sprinkler_id',
-                'AttributeType': 'S'
-            },
-            {
-                'AttributeName': 'timestamp',
                 'AttributeType': 'S'
             }
         ],
@@ -126,8 +119,8 @@ def insert_sprinkler_data(dynamodb):
         table.put_item(
             Item=ddb_data
         )
-        latitude += 1
-        longitude += 1
+        latitude += 5
+        longitude += 5
 
 
 # function to create SNS
@@ -145,18 +138,11 @@ def create_sns(sns_client):
 
 def test_code_lambda():
 
-    sprinkler_table_name = 'sprinkler_data'
-    sprinkler_table = boto3.resource(
-        'dynamodb').Table(sprinkler_table_name)
-    update_resp = sprinkler_table.update_item(
-        Key={
-            # sprinkler_id, latitude, longitude, status
-            'sprinkler_id': 'Sprinkler2'
-        },
-        UpdateExpression='set sprinkler_status = :val1',
-        ExpressionAttributeValues={
-            ':val1': 'ON'
-        },
-        ReturnValues="UPDATED_NEW"
-    )
-    print(update_resp)
+    # sns
+    sns_client = boto3.client('sns', region_name='us-east-1')
+    # change required
+    topic_arn = "arn:aws:sns:us-east-1:212546747799:weather_data_sns_topic"
+    print("SNS starting")
+    message = f"\n Hello, \n\n Weather data anomaly detected on  for sensors: ."
+    # subject = f"{timestamp} Weather data anomaly detected for {sensor_id} and current OWM weather data. Please  turn on the sprinkler: {sprinkler_id}"
+    sns_client.publish(TopicArn=topic_arn, Message=message)

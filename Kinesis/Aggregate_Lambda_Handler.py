@@ -15,7 +15,6 @@ def lambda_handler(event, context):
         data = base64.b64decode(record['data'])
         data = str(data, 'utf-8')
         readings = json.loads(data)
-        pprint(readings, sort_dicts=False)
         sprinklerid = readings['SPRINKLER_ID']
         sensor_id = readings['SENSOR_ID']
         sensor_timestamp = readings['SENSOR_TIMESTAMP']
@@ -32,11 +31,13 @@ def lambda_handler(event, context):
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
                              'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
 
+    print("calling off method")
     change_sprinkler_status_off()
 
 
 def change_sprinkler_status_off():
     # first scan sprinkler table and get all data
+    print("in the method")
     table_name = 'sprinkler_data'
     sprinkler_table = boto3.resource('dynamodb').Table(table_name)
     # sns
@@ -63,8 +64,7 @@ def change_sprinkler_status_off():
             print('Deleting data in the table')
             sprinkler_table.delete_item(
                 Key={
-                    'sprinkler_id': item['sprinkler_id'],
-                    'timestamp': item['timestamp']
+                    'sprinkler_id': item['sprinkler_id']
                 }
             )
             print(

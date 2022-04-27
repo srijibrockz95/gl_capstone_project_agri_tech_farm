@@ -7,9 +7,14 @@ import datetime
 import sched
 
 
-KINESIS_DATA_STREAM = "TestStream01"
+KINESIS_DATA_STREAM = "StreamSource01"
 
 kinesis_handle = boto3.client('kinesis', region_name="us-east-1")
+kinesis_response = kinesis_handle.get_shard_iterator(
+    StreamName=KINESIS_DATA_STREAM,
+    ShardId='shardId-000000000000',
+    ShardIteratorType='LATEST'
+)
 
 
 # Function to push data in the kinesis stream, partition key of kinesis stream is deviceid
