@@ -17,6 +17,10 @@
     padding: 12px;
 }
 
+.sensor__cell {
+    padding: 25px;
+}
+
 .heading {
     font-weight: 200;
     font-size: large;
