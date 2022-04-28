@@ -38,8 +38,8 @@ class AWS:
     # Before publishing we are configuring message to be published on MQTT
     def publish(self):
         print('Begin Publish')
-        temp = 17 + (5 % self.temp_counter)
-        moisture = 63 - (5 % self.moisture_counter)
+        temp = 17 + (self.temp_counter % 4)
+        moisture = 63 - (self.moisture_counter % 4)
         self.temp_counter += 0.02
         self.moisture_counter += 0.02
         # Iterating through the items in device configuration dictionary, every second
