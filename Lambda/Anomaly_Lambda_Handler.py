@@ -12,10 +12,10 @@ from decimal import Decimal
 # Dynamodb
 anomaly_table_name = 'anomaly_data'
 anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
-sprinkler_table_name = 'sprinkler_data'
-sprinkler_table = boto3.resource('dynamodb').Table(sprinkler_table_name)
+device_table_name = 'device_data'
+device_table = boto3.resource('dynamodb').Table(device_table_name)
 # owm
-# owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
+owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
 
 # sns
 sns_client = boto3.client('sns', region_name='us-east-1')
@@ -31,55 +31,48 @@ timestamp = ""
 
 
 def Anomaly_handler(event, context):
-    global i
     global sprinklers
     global timestamp
     try:
-        print(len(event['records']))
         for record in event['records']:
-            print(f"record no: {i}")
-            i += 1
             data = base64.b64decode(record['data'])
             data = str(data, 'utf-8')
             readings = json.loads(data)
-            print(readings)
             # get anomaly data
             sprinkler_id = readings['SPRINKLER_ID']
-            print(f"sprinkler_id: {sprinkler_id}")
-
             sprinklers.append(sprinkler_id)
-
             sensor_id = readings['SENSOR_ID']
+            # for debugging
+            print(f"sprinkler_id: {sprinkler_id}")
             print(f"sensor_id: {sensor_id}")
             timestamp = readings['SENSOR_TIMESTAMP']
             temperature = str(readings['AVG_TEMPERATURE'])
             moisture = str(readings['AVG_MOISTURE'])
             sensor_lat = float(readings['SENSOR_LAT'])
             sensor_long = float(readings['SENSOR_LONG'])
+
             # get sprinkler lat,long and status values
-            print("Test1")
-            sprinkler_data = get_sprinkler_data(sprinkler_id=sprinkler_id)
-            # pprint(sprinkler_data)
-            sprinkler_lat = sprinkler_data[0]['sprinkler_lat']
-            sprinkler_long = sprinkler_data[0]['sprinkler_long']
-            sprinkler_status = sprinkler_data[0]['sprinkler_status']
-            sprinkler_timestamp = sprinkler_data[0]['sprinkler_timestamp']
-            print("Test2")
+            sprinkler_data = get_sprinkler_data(sprinkler_id == sprinkler_id)
+            sprinkler_lat = sprinkler_data[0]['device_lat']
+            sprinkler_long = sprinkler_data[0]['device_long']
+            sprinkler_status = sprinkler_data[0]['status']
+            sprinkler_timestamp = sprinkler_data[0]['device_timestamp']
             # get owm weather data
-            # mgr = owm.weather_manager()
-            # print(f"weather mgr: {mgr}")
-            # one_call = mgr.one_call(lat=float(sprinkler_lat), lon=float(sprinkler_long))
-            # print(f"one_call: {one_call}")
-            # current_data = json.dumps(one_call.current.__dict__)
-            # pprint(current_data)
-            # owm_humidity = one_call.current.humidity
-            # owm_temperature = one_call.current.temperature('celsius')['temp']
-            # print(f"owm_temperature: {owm_temperature}")
-            # print(f"owm_humidity: {owm_humidity}")
+            mgr = owm.weather_manager()
+            print(f"weather mgr: {mgr}")
+            one_call = mgr.one_call(
+                lat=float(sprinkler_lat), lon=float(sprinkler_long))
+            print(f"one_call: {one_call}")
+            current_data = json.dumps(one_call.current.__dict__)
+            pprint(current_data)
+            owm_humidity = one_call.current.humidity
+            owm_temperature = one_call.current.temperature('celsius')['temp']
+            print(f"owm_temperature: {owm_temperature}")
+            print(f"owm_humidity: {owm_humidity}")
             # ignore seconds. considering only minutes.
             owm_timestamp = timestamp
-            owm_temperature = 25
-            owm_humidity = 30
+            # owm_temperature = 25
+            # owm_humidity = 30
             # owm anomaly check and processes followed
             if owm_temperature >= 20 or owm_humidity <= 60:
                 owm_alert_flag = True
@@ -113,15 +106,14 @@ def Anomaly_handler(event, context):
 
 
 def get_sprinkler_data(sprinkler_id):
-    response = sprinkler_table.query(
-        KeyConditionExpression=Key('sprinkler_id').eq(sprinkler_id))
+    response = device_table.query(
+        KeyConditionExpression=Key('device_id').eq(sprinkler_id))
     return response['Items']
 
 
 def process_anomaly():
     global sprinklers
     global timestamp
-
     sprinklers = set(sprinklers)
     print(sprinklers)
     for sprinkler_id in sprinklers:
@@ -153,16 +145,13 @@ def process_anomaly():
             print("sns published. check email")
 
             # update sprinkler status in sprinkler table.
-            # since we need to update the sort key (timestamp), we cannot do update query
-            # we need to delete the record and insert a new one.
-
             current_datetime = str(datetime.now())
-            sprinkler_table.update_item(
+            device_table.update_item(
                 Key={
-                    'sprinkler_id': sprinkler_id
+                    'device_id': sprinkler_id
 
                 },
-                UpdateExpression='SET sprinkler_status = :val1, sprinkler_timestamp = :val2',
+                UpdateExpression='SET status = :val1, device_timestamp = :val2',
                 ExpressionAttributeValues={
                     ':val1': 'ON',
                     ':val2': current_datetime

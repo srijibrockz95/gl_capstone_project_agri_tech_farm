@@ -75,18 +75,18 @@ def create_anomaly_data_table(dynamodb):
 
 # function to create sprinkler master table
 
-def create_sprinkler_data_table(dynamodb):
+def create_device_data_table(dynamodb):
     table = dynamodb.create_table(
-        TableName='sprinkler_data',
+        TableName='device_data',
         KeySchema=[
             {
-                'AttributeName': 'sprinkler_id',
+                'AttributeName': 'device_id',
                 'KeyType': 'HASH'
             }
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'sprinkler_id',
+                'AttributeName': 'device_id',
                 'AttributeType': 'S'
             }
         ],
@@ -100,27 +100,50 @@ def create_sprinkler_data_table(dynamodb):
 
 # function to insert data into sprinkler table
 
-def insert_sprinkler_data(dynamodb):
-    table = dynamodb.Table('sprinkler_data')
-    latitude = 28.5355
-    longitude = 77.3910
+def insert_device_data(dynamodb):
+    table = dynamodb.Table('device_data')
+    sprinkler_latitude = 28.5355
+    sprinkler_longitude = 77.3910
+    sensor_latitude = 28.5355
+    sensor_longitude = 77.3910
     timestamp = str(datetime.now())
+    # data for sprinklers
     for i in range(1, 6):
         raw_data = {
             # The PK and the sort keys are mandatory
-            'sprinkler_id': f'Sprinkler{i}',
-            'sprinkler_status': 'OFF',
+            'device_id': f'Sprinkler{i}',
+            'status': 'OFF',
             # Due to the schemaless nature the following keys are not required in the table definition
-            'sprinkler_lat': latitude,
-            'sprinkler_long': longitude,
-            'sprinkler_timestamp': timestamp
+            'device_lat': sprinkler_latitude,
+            'device_long': sprinkler_longitude,
+            'device_timestamp': timestamp,
+            'device_type': 'sprinkler'
         }
         ddb_data = json.loads(json.dumps(raw_data), parse_float=Decimal)
         table.put_item(
             Item=ddb_data
         )
-        latitude += 5
-        longitude += 5
+        sprinkler_latitude += 5
+        sprinkler_longitude += 5
+
+    # data for sensors
+    for i in range(20):
+        raw_data = {
+            # The PK and the sort keys are mandatory
+            'device_id': f'Sensor{i}',
+            'status': 'OFF',
+            # Due to the schemaless nature the following keys are not required in the table definition
+            'device_lat': sensor_latitude,
+            'device_long': sensor_longitude,
+            'device_timestamp': timestamp,
+            'device_type': 'sensor'
+        }
+        ddb_data = json.loads(json.dumps(raw_data), parse_float=Decimal)
+        table.put_item(
+            Item=ddb_data
+        )
+        sensor_latitude += 1
+        sensor_longitude += 1
 
 
 # function to create SNS

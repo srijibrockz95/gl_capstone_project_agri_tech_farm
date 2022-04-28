@@ -30,16 +30,14 @@ def lambda_handler(event, context):
                              'avg_temp': str(avg_temp), 'max_temp': str(max_temp),
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
                              'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
-
-    print("calling off method")
+        print("Inserted to Aggregate table")
     change_sprinkler_status_off()
 
 
 def change_sprinkler_status_off():
     # first scan sprinkler table and get all data
-    print("in the method")
-    table_name = 'sprinkler_data'
-    sprinkler_table = boto3.resource('dynamodb').Table(table_name)
+    table_name = 'device_data'
+    device_table = boto3.resource('dynamodb').Table(table_name)
     # sns
     sns_client = boto3.client('sns', region_name='us-east-1')
     # change required
@@ -48,17 +46,12 @@ def change_sprinkler_status_off():
     iot_client = boto3.client(
         'iot-data', region_name='us-east-1', verify=False)
     # loop through all sprinklers and check if the db timestamp is >= 10 mins
-    response = sprinkler_table.scan()
+    response = device_table.scan()
     for item in response['Items']:
         # convert database string datetime to datetime datatype
-
-        print(f"sprinkler_timestamp: {item['sprinkler_timestamp']}")
-
-        db_datetime = (datetime.fromisoformat(item['sprinkler_timestamp']))
-
+        print(f"device_timestamp: {item['device_timestamp']}")
+        db_datetime = (datetime.fromisoformat(item['device_timestamp']))
         current_time = datetime.now()
-        print(f"Current_time: {current_time}")
-
         # (compare with current time)
         duration = current_time-db_datetime
         duration_in_seconds = duration.total_seconds()
@@ -70,17 +63,18 @@ def change_sprinkler_status_off():
             # so need to delete the record and insert with new values as timestamp is sort key.
             print("dynamodb update starting")
             current_datetime = str(datetime.now())
-            sprinkler_table.update_item(
+            device_table.update_item(
                 Key={
-                    'sprinkler_id': item['sprinkler_id']
+                    'device_id': item['device_id']
 
                 },
-                UpdateExpression='SET sprinkler_status = :val1, sprinkler_timestamp = :val2',
+                UpdateExpression='SET status = :val1, device_timestamp = :val2',
                 ExpressionAttributeValues={
                     ':val1': 'OFF',
                     ':val2': current_datetime
 
                 })
+            print("dynamodb sprinkler table updated")
 
             # send sns notification
             print("SNS starting")
@@ -94,5 +88,4 @@ def change_sprinkler_status_off():
             notification = {"message": message}
             response = iot_client.publish(
                 topic='weather_data', payload=json.dumps(notification))
-
-            print(response)
+            print("MQTT published")
