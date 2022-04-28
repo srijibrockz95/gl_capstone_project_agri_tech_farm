@@ -52,6 +52,7 @@ def change_sprinkler_status_off():
         print(f"device_timestamp: {item['device_timestamp']}")
         db_datetime = (datetime.fromisoformat(item['device_timestamp']))
         current_time = datetime.now()
+        print(f"current_timestamp: {current_time}")
         # (compare with current time)
         duration = current_time-db_datetime
         duration_in_seconds = duration.total_seconds()
@@ -68,7 +69,7 @@ def change_sprinkler_status_off():
                     'device_id': item['device_id']
 
                 },
-                UpdateExpression='SET status = :val1, device_timestamp = :val2',
+                UpdateExpression='SET device_status = :val1, device_timestamp = :val2',
                 ExpressionAttributeValues={
                     ':val1': 'OFF',
                     ':val2': current_datetime
@@ -78,7 +79,7 @@ def change_sprinkler_status_off():
 
             # send sns notification
             print("SNS starting")
-            message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['sprinkler_id']}."
+            message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
             sns_client.publish(TopicArn=topic_arn, Message=message)
             print("sns published. check email")
 
@@ -87,5 +88,5 @@ def change_sprinkler_status_off():
             print("MQTT starting")
             notification = {"message": message}
             response = iot_client.publish(
-                topic='weather_data', payload=json.dumps(notification))
+                topic='weather_data', qos=0, payload=json.dumps(notification))
             print("MQTT published")

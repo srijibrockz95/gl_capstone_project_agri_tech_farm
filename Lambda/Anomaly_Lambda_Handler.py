@@ -15,7 +15,7 @@ anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
 device_table_name = 'device_data'
 device_table = boto3.resource('dynamodb').Table(device_table_name)
 # owm
-owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
+# owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
 
 # sns
 sns_client = boto3.client('sns', region_name='us-east-1')
@@ -30,7 +30,7 @@ sprinklers = []
 timestamp = ""
 
 
-def Anomaly_handler(event, context):
+def lambda_handler(event, context):
     global sprinklers
     global timestamp
     try:
@@ -45,6 +45,7 @@ def Anomaly_handler(event, context):
             # for debugging
             print(f"sprinkler_id: {sprinkler_id}")
             print(f"sensor_id: {sensor_id}")
+
             timestamp = readings['SENSOR_TIMESTAMP']
             temperature = str(readings['AVG_TEMPERATURE'])
             moisture = str(readings['AVG_MOISTURE'])
@@ -52,27 +53,30 @@ def Anomaly_handler(event, context):
             sensor_long = float(readings['SENSOR_LONG'])
 
             # get sprinkler lat,long and status values
-            sprinkler_data = get_sprinkler_data(sprinkler_id == sprinkler_id)
+            print("Test1")
+            sprinkler_data = get_sprinkler_data(sprinkler_id)
             sprinkler_lat = sprinkler_data[0]['device_lat']
             sprinkler_long = sprinkler_data[0]['device_long']
-            sprinkler_status = sprinkler_data[0]['status']
+            sprinkler_status = sprinkler_data[0]['device_status']
             sprinkler_timestamp = sprinkler_data[0]['device_timestamp']
-            # get owm weather data
-            mgr = owm.weather_manager()
-            print(f"weather mgr: {mgr}")
-            one_call = mgr.one_call(
-                lat=float(sprinkler_lat), lon=float(sprinkler_long))
-            print(f"one_call: {one_call}")
-            current_data = json.dumps(one_call.current.__dict__)
-            pprint(current_data)
-            owm_humidity = one_call.current.humidity
-            owm_temperature = one_call.current.temperature('celsius')['temp']
-            print(f"owm_temperature: {owm_temperature}")
-            print(f"owm_humidity: {owm_humidity}")
-            # ignore seconds. considering only minutes.
+
+            print("Test2")
+            # # get owm weather data
+            # mgr = owm.weather_manager()
+            # print(f"weather mgr: {mgr}")
+            # one_call = mgr.one_call(
+            #     lat=float(sprinkler_lat), lon=float(sprinkler_long))
+            # print(f"one_call: {one_call}")
+            # current_data = json.dumps(one_call.current.__dict__)
+            # pprint(current_data)
+            # owm_humidity = one_call.current.humidity
+            # owm_temperature = one_call.current.temperature('celsius')['temp']
+            # print(f"owm_temperature: {owm_temperature}")
+            # print(f"owm_humidity: {owm_humidity}")
+            # # ignore seconds. considering only minutes.
             owm_timestamp = timestamp
-            # owm_temperature = 25
-            # owm_humidity = 30
+            owm_temperature = 25
+            owm_humidity = 30
             # owm anomaly check and processes followed
             if owm_temperature >= 20 or owm_humidity <= 60:
                 owm_alert_flag = True
@@ -151,7 +155,7 @@ def process_anomaly():
                     'device_id': sprinkler_id
 
                 },
-                UpdateExpression='SET status = :val1, device_timestamp = :val2',
+                UpdateExpression='SET device_status = :val1, device_timestamp = :val2',
                 ExpressionAttributeValues={
                     ':val1': 'ON',
                     ':val2': current_datetime
@@ -162,7 +166,7 @@ def process_anomaly():
             message = f"Please turn ON {sprinkler_id}. Anomaly detected in OWM data and for sensors: {alarm_sensors_list} \nTimestamp : {timestamp}"
             notification = {"message": message}
             response = iot_client.publish(
-                topic='weather_data', payload=json.dumps(notification))
+                topic='weather_data', qos=0, payload=json.dumps(notification))
 
             print(response)
         else:

@@ -112,7 +112,7 @@ def insert_device_data(dynamodb):
         raw_data = {
             # The PK and the sort keys are mandatory
             'device_id': f'Sprinkler{i}',
-            'status': 'OFF',
+            'device_status': 'OFF',
             # Due to the schemaless nature the following keys are not required in the table definition
             'device_lat': sprinkler_latitude,
             'device_long': sprinkler_longitude,
@@ -131,7 +131,7 @@ def insert_device_data(dynamodb):
         raw_data = {
             # The PK and the sort keys are mandatory
             'device_id': f'Sensor{i}',
-            'status': 'OFF',
+            'device_status': 'OFF',
             # Due to the schemaless nature the following keys are not required in the table definition
             'device_lat': sensor_latitude,
             'device_long': sensor_longitude,

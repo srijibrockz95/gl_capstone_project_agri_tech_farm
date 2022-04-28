@@ -1,6 +1,6 @@
 .table {
     border-spacing: 0;
-    margin: 1rem;
+    margin: 2rem;
     background-color: #f5f5f5;
     vertical-align: top;
 }
@@ -14,7 +14,7 @@
 }
 
 .table__cell {
-    padding: 12px;
+    padding: 25px;
 }
 
 .sensor__cell {
