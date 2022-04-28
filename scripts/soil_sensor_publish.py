@@ -27,6 +27,8 @@ class AWS:
         self.myAWSIoTMQTTClient.configureEndpoint(ENDPOINT, MQTT_PORT)
         self.myAWSIoTMQTTClient.configureCredentials(self.root_path, self.pvt_key_path, self.cert_path)
         self._connect()
+        self.temp_counter = 0
+        self.moisture_counter = 0
 
     # Connect method to establish connection with AWS IoT core MQTT
     def _connect(self):
@@ -36,11 +38,15 @@ class AWS:
     # Before publishing we are configuring message to be published on MQTT
     def publish(self):
         print('Begin Publish')
+        temp = 17 + (self.temp_counter % 4)
+        moisture = 63 - (self.moisture_counter % 4)
+        self.temp_counter += 0.02
+        self.moisture_counter += 0.02
         # Iterating through the items in device configuration dictionary, every second
         message = {}
-        temp_value = float(random.normalvariate(21, 1.5))
+        temp_value = float(random.normalvariate(temp, 0.1))
         temp_value = round(temp_value, 1)
-        moisture_value = float(random.normalvariate(58, 1.5))
+        moisture_value = float(random.normalvariate(moisture, 0.1))
         moisture_value = round(moisture_value, 1)
         timestamp = str(datetime.datetime.now())
         message['sensor_id'] = self.device_id
