@@ -46,7 +46,9 @@ def Anomaly_handler(event, context):
             # get anomaly data
             sprinkler_id = readings['SPRINKLER_ID']
             print(f"sprinkler_id: {sprinkler_id}")
+
             sprinklers.append(sprinkler_id)
+
             sensor_id = readings['SENSOR_ID']
             print(f"sensor_id: {sensor_id}")
             timestamp = readings['SENSOR_TIMESTAMP']
@@ -55,14 +57,14 @@ def Anomaly_handler(event, context):
             sensor_lat = float(readings['SENSOR_LAT'])
             sensor_long = float(readings['SENSOR_LONG'])
             # get sprinkler lat,long and status values
-
+            print("Test1")
             sprinkler_data = get_sprinkler_data(sprinkler_id=sprinkler_id)
             # pprint(sprinkler_data)
             sprinkler_lat = sprinkler_data[0]['sprinkler_lat']
             sprinkler_long = sprinkler_data[0]['sprinkler_long']
             sprinkler_status = sprinkler_data[0]['sprinkler_status']
-            sprinkler_timestamp = sprinkler_data[0]['timestamp']
-
+            sprinkler_timestamp = sprinkler_data[0]['sprinkler_timestamp']
+            print("Test2")
             # get owm weather data
             # mgr = owm.weather_manager()
             # print(f"weather mgr: {mgr}")
@@ -119,6 +121,9 @@ def get_sprinkler_data(sprinkler_id):
 def process_anomaly():
     global sprinklers
     global timestamp
+
+    sprinklers = set(sprinklers)
+    print(sprinklers)
     for sprinkler_id in sprinklers:
         # query anomaly table by timestamp and sprinkler_id
         # get the distinct sensor_ids count from the query result.
@@ -135,8 +140,8 @@ def process_anomaly():
             for item in scan_resp['Items']:
                 if item['sensor_id'] not in sensors_in_alarm:
                     sensors_in_alarm.append(item['sensor_id'])
-        if(len(sensors_in_alarm) >= 3):
             alarm_sensors_list = ', '.join(str(x) for x in sensors_in_alarm)
+        if(len(sensors_in_alarm) >= 3):
             anomaly_data_for_3_sensors = '\n '.join(
                 str(item) for item in scan_resp['Items'])
             print(f'List of sensors in alarm: {alarm_sensors_list}')
@@ -151,27 +156,18 @@ def process_anomaly():
             # since we need to update the sort key (timestamp), we cannot do update query
             # we need to delete the record and insert a new one.
 
-            print('Deleting data in the table')
-            sprinkler_table.delete_item(
+            current_datetime = str(datetime.now())
+            sprinkler_table.update_item(
                 Key={
                     'sprinkler_id': sprinkler_id
-                }
-            )
-            print(
-                f'Items left in the table are: {sprinkler_table.item_count}')
-            current_datetime = str(datetime.now())
-            sprinkler_data = get_sprinkler_data(sprinkler_id=sprinkler_id)
-            sprinkler_table.put_item(
-                Item={
-                    'sprinkler_id': sprinkler_id,
-                    'timestamp':  current_datetime,
-                    'sprinkler_lat': sprinkler_data[0]['sprinkler_lat'],
-                    'sprinkler_long': sprinkler_data[0]['sprinkler_long'],
-                    'sprinkler_status': 'ON'
-                }
-            )
-            print('Total items in the table are: ',
-                  sprinkler_table.item_count)
+
+                },
+                UpdateExpression='SET sprinkler_status = :val1, sprinkler_timestamp = :val2',
+                ExpressionAttributeValues={
+                    ':val1': 'ON',
+                    ':val2': current_datetime
+
+                })
             # publish to iot core
             # # chanage required for topic. need to check
             message = f"Please turn ON {sprinkler_id}. Anomaly detected in OWM data and for sensors: {alarm_sensors_list} \nTimestamp : {timestamp}"
