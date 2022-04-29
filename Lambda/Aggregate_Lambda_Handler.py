@@ -4,6 +4,20 @@ from urllib import response
 import boto3
 import base64
 from pprint import pprint
+from boto3.dynamodb.conditions import Key, Attr
+
+# first scan sprinkler table and get all data
+table_name = 'device_data'
+device_table = boto3.resource('dynamodb').Table(table_name)
+anomaly_table_name = 'anomaly_data'
+anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
+# sns
+sns_client = boto3.client('sns', region_name='us-east-1')
+# change required
+topic_arn = "arn:aws:sns:us-east-1:212546747799:weather_data_sns_topic"
+# iot-core
+iot_client = boto3.client(
+    'iot-data', region_name='us-east-1', verify=False)
 
 
 def lambda_handler(event, context):
@@ -31,22 +45,31 @@ def lambda_handler(event, context):
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
                              'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
         print("Inserted to Aggregate table")
-    change_sprinkler_status_off()
+    sprinkler_sensor_status_off()
 
 
-def change_sprinkler_status_off():
-    # first scan sprinkler table and get all data
-    table_name = 'device_data'
-    device_table = boto3.resource('dynamodb').Table(table_name)
-    # sns
-    sns_client = boto3.client('sns', region_name='us-east-1')
-    # change required
-    topic_arn = "arn:aws:sns:us-east-1:212546747799:weather_data_sns_topic"
-    # iot-core
-    iot_client = boto3.client(
-        'iot-data', region_name='us-east-1', verify=False)
+def update_device_status(device_id):
+    print("device_data status update starting")
+    current_datetime = str(datetime.now())
+    device_table.update_item(
+        Key={
+            'device_id': device_id
+
+        },
+        UpdateExpression='SET device_status = :val1, device_timestamp = :val2',
+        ExpressionAttributeValues={
+            ':val1': 'OFF',
+            ':val2': current_datetime
+
+        })
+    print("device_data table updated")
+
+
+def sprinkler_sensor_status_off():
+
     # loop through all sprinklers and check if the db timestamp is >= 10 mins
-    response = device_table.scan()
+    response = device_table.scan(
+        FilterExpression=Attr('device_type').eq('sprinkler'))
     for item in response['Items']:
         # convert database string datetime to datetime datatype
         print(f"device_timestamp: {item['device_timestamp']}")
@@ -59,23 +82,23 @@ def change_sprinkler_status_off():
         minutes = divmod(duration_in_seconds, 60)[0]
         print(f"minutes: {minutes}")
         if minutes >= 0:
-            # if yes, turn oFF sprinkler, SNS, IoT MQTT
-            # while turning off update sprinkler_status and timestamp.
-            # so need to delete the record and insert with new values as timestamp is sort key.
-            print("dynamodb update starting")
-            current_datetime = str(datetime.now())
-            device_table.update_item(
-                Key={
-                    'device_id': item['device_id']
+            # if yes, turn OFF sprinkler, sensor alarm, SNS, IoT MQTT
+            update_device_status(item['device_id'])
+            # Get all sensors in anomaly attached to this sprinkler from the anomaly table and turn off alarm
+            anomaly_response = anomaly_table.scan(
+                FilterExpression=Attr('device_id').eq(item['device_id']))
+            anomaly_sensors = []
+            for record in anomaly_response['Items']:
+                anomaly_sensors.append(record['sensor_id'])
+            anomaly_sensors = set(anomaly_sensors)
 
-                },
-                UpdateExpression='SET device_status = :val1, device_timestamp = :val2',
-                ExpressionAttributeValues={
-                    ':val1': 'OFF',
-                    ':val2': current_datetime
-
-                })
-            print("dynamodb sprinkler table updated")
+            for sensor in anomaly_sensors:
+                # check if this sensor status is ON.then update to off.
+                sensor_resp = device_table.scan(
+                    FilterExpression=Attr('device_id').eq('sensor'))
+                for item in sensor_resp['Items']:
+                    if item['device_status'] == 'ON':
+                        update_device_status(sensor)
 
             # send sns notification
             print("SNS starting")

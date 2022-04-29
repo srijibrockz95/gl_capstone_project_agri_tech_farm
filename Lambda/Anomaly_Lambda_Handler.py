@@ -45,22 +45,21 @@ def lambda_handler(event, context):
             # for debugging
             print(f"sprinkler_id: {sprinkler_id}")
             print(f"sensor_id: {sensor_id}")
-
             timestamp = readings['SENSOR_TIMESTAMP']
             temperature = str(readings['AVG_TEMPERATURE'])
             moisture = str(readings['AVG_MOISTURE'])
             sensor_lat = float(readings['SENSOR_LAT'])
             sensor_long = float(readings['SENSOR_LONG'])
 
+            # turn on sensor alarm in device table
+            update_device_status(sensor_id)
+
             # get sprinkler lat,long and status values
-            print("Test1")
             sprinkler_data = get_sprinkler_data(sprinkler_id)
             sprinkler_lat = sprinkler_data[0]['device_lat']
             sprinkler_long = sprinkler_data[0]['device_long']
             sprinkler_status = sprinkler_data[0]['device_status']
             sprinkler_timestamp = sprinkler_data[0]['device_timestamp']
-
-            print("Test2")
             # # get owm weather data
             # mgr = owm.weather_manager()
             # print(f"weather mgr: {mgr}")
@@ -115,6 +114,23 @@ def get_sprinkler_data(sprinkler_id):
     return response['Items']
 
 
+def update_device_status(device_id):
+    print("device_data status update starting")
+    current_datetime = str(datetime.now())
+    device_table.update_item(
+        Key={
+            'device_id': device_id
+
+        },
+        UpdateExpression='SET device_status = :val1, device_timestamp = :val2',
+        ExpressionAttributeValues={
+            ':val1': 'ON',
+            ':val2': current_datetime
+
+        })
+    print("device_data table updated")
+
+
 def process_anomaly():
     global sprinklers
     global timestamp
@@ -127,7 +143,7 @@ def process_anomaly():
         scan_resp = anomaly_table.scan(FilterExpression=Attr('timestamp').eq(
             timestamp) & Attr('sprinkler_id').eq(sprinkler_id))
         owm_resp = anomaly_table.scan(FilterExpression=Attr('timestamp').eq(
-            timestamp) & Attr('sprinkler_id').eq('owm'))
+            timestamp) & Attr('sensor_id').eq('owm'))
         owm_anomaly = '\n '.join(str(item) for item in owm_resp['Items'])
         sensors_in_alarm = []
         print(f"Count: {scan_resp['Count']}")
@@ -149,18 +165,8 @@ def process_anomaly():
             print("sns published. check email")
 
             # update sprinkler status in sprinkler table.
-            current_datetime = str(datetime.now())
-            device_table.update_item(
-                Key={
-                    'device_id': sprinkler_id
+            update_device_status(sprinkler_id)
 
-                },
-                UpdateExpression='SET device_status = :val1, device_timestamp = :val2',
-                ExpressionAttributeValues={
-                    ':val1': 'ON',
-                    ':val2': current_datetime
-
-                })
             # publish to iot core
             # # chanage required for topic. need to check
             message = f"Please turn ON {sprinkler_id}. Anomaly detected in OWM data and for sensors: {alarm_sensors_list} \nTimestamp : {timestamp}"
