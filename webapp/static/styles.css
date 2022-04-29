@@ -2,7 +2,12 @@
     border-spacing: 0;
     margin: 2rem;
     background-color: #f5f5f5;
-    vertical-align: top;
+    display: block;
+    height: 400px;
+    overflow-y: scroll;
+    border: darkgrey;
+    border-style: groove;
+
 }
 
 .table__row:nth-child(even) {
@@ -11,17 +16,35 @@
 
 .table__header {
     text-align: left;
+    background-color: darkgrey
+}
+
+thead th {
+    position: sticky;
+    top: 0;
 }
 
 .table__cell {
-    padding: 25px;
+    padding: 15px;
 }
 
-.sensor__cell {
-    padding: 25px;
+.table__sprinkler {
+    padding: 15px
 }
 
-.heading {
-    font-weight: 200;
-    font-size: large;
+h2 {
+    font-size: 2em;
+    margin-top: 40px;
+    text-align: center;
+    letter-spacing: -2px;
+}
+
+h3 {
+    margin-left: 225px;
+}
+
+body {
+    background-color: beige;
+    margin-left: 50px;
+    margin-right: 50px;
 }

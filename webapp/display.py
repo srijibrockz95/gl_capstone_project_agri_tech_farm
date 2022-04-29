@@ -28,8 +28,6 @@ def get_device_data(device_type):
     current_time = datetime.now()
     list_data = []
     tuple_data = ()
-    n = -2
-    passed_time = current_time + timedelta(n)
     anomaly_table = dynamodb.Table('device_data')
     response = anomaly_table.scan(
         FilterExpression=Attr('device_type').eq(device_type))
@@ -38,7 +36,7 @@ def get_device_data(device_type):
                       item['device_status'], item['device_lat'], item['device_long'], item['device_timestamp'], )
         list_data.append(item_tuple)
     tuple_data = tuple(list_data)
-    return tuple_data
+    return sorted(tuple_data)
 
 
 app.run(debug=True)
