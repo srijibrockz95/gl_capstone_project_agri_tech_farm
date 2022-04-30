@@ -88,7 +88,6 @@ if __name__ == '__main__':
 
     # Create device/sensor objects using the appropriate certificates and private keys
     for device in thing_list:
-        print(device["ThingName"], type(device["ThingName"]))
         device["ThingName"] = AWS(device["ThingName"], device["GroupName"], device["ThingName"] + ".pem.crt",
                                   device["ThingName"] + ".pem.key", device["lat"], device["long"])
 
