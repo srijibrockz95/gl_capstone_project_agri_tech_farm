@@ -51,9 +51,6 @@ def lambda_handler(event, context):
             sensor_lat = float(readings['SENSOR_LAT'])
             sensor_long = float(readings['SENSOR_LONG'])
 
-            # turn on sensor alarm in device table
-            update_device_status(sensor_id)
-
             # get sprinkler lat,long and status values
             sprinkler_data = get_sprinkler_data(sprinkler_id)
             sprinkler_lat = sprinkler_data[0]['device_lat']
@@ -61,21 +58,21 @@ def lambda_handler(event, context):
             sprinkler_status = sprinkler_data[0]['device_status']
             sprinkler_timestamp = sprinkler_data[0]['device_timestamp']
             # # get owm weather data
-            # mgr = owm.weather_manager()
-            # print(f"weather mgr: {mgr}")
-            # one_call = mgr.one_call(
-            #     lat=float(sprinkler_lat), lon=float(sprinkler_long))
-            # print(f"one_call: {one_call}")
-            # current_data = json.dumps(one_call.current.__dict__)
-            # pprint(current_data)
-            # owm_humidity = one_call.current.humidity
-            # owm_temperature = one_call.current.temperature('celsius')['temp']
-            # print(f"owm_temperature: {owm_temperature}")
-            # print(f"owm_humidity: {owm_humidity}")
+            mgr = owm.weather_manager()
+            print(f"weather mgr: {mgr}")
+            one_call = mgr.one_call(
+                lat=float(sprinkler_lat), lon=float(sprinkler_long))
+            print(f"one_call: {one_call}")
+            current_data = json.dumps(one_call.current.__dict__)
+            pprint(current_data)
+            owm_humidity = one_call.current.humidity
+            owm_temperature = one_call.current.temperature('celsius')['temp']
+            print(f"owm_temperature: {owm_temperature}")
+            print(f"owm_humidity: {owm_humidity}")
             # # ignore seconds. considering only minutes.
             owm_timestamp = timestamp
-            owm_temperature = 25
-            owm_humidity = 30
+            # owm_temperature = 25
+            # owm_humidity = 30
             # owm anomaly check and processes followed
             if owm_temperature >= 20 or owm_humidity <= 60:
                 owm_alert_flag = True
@@ -100,6 +97,10 @@ def lambda_handler(event, context):
                 anomaly_table.put_item(Item=ddb_owm_anomaly_data)
                 print(
                     f'OWM anomaly inserted')
+
+                # turn on sensor alarm in device table
+                update_device_status(sensor_id)
+
             else:
                 print(
                     f"No anomaly in OWM data for the timestamp: {owm_timestamp}")
@@ -177,6 +178,6 @@ def process_anomaly():
             print(response)
         else:
             print(
-                f"{sprinkler_id} does not have 50% or more sensors with anomaly data alarm.")
+                f"{sprinkler_id} does not have 50% or more sensors with anomaly data.")
     sprinklers = []
     timestamp = ""

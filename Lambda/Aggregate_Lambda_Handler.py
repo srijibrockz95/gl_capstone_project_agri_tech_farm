@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, time
 import json
 from urllib import response
 import boto3
 import base64
 from pprint import pprint
 from boto3.dynamodb.conditions import Key, Attr
+
 
 # first scan sprinkler table and get all data
 table_name = 'device_data'
@@ -18,14 +19,17 @@ topic_arn = "arn:aws:sns:us-east-1:212546747799:weather_data_sns_topic"
 # iot-core
 iot_client = boto3.client(
     'iot-data', region_name='us-east-1', verify=False)
+sensor_timestamp = ""
 
 
 def lambda_handler(event, context):
     # Dynamodb
     tablename = 'aggregate_data'
     table = boto3.resource('dynamodb').Table(tablename)
+    global sensor_timestamp
 
     for record in event['records']:
+
         data = base64.b64decode(record['data'])
         data = str(data, 'utf-8')
         readings = json.loads(data)
@@ -46,6 +50,7 @@ def lambda_handler(event, context):
                              'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
         print("Inserted to Aggregate table")
     sprinkler_sensor_status_off()
+    sensor_timestamp = ""
 
 
 def update_device_status(device_id):
@@ -67,49 +72,64 @@ def update_device_status(device_id):
 
 def sprinkler_sensor_status_off():
 
+    print("inside method")
     # loop through all sprinklers and check if the db timestamp is >= 10 mins
     response = device_table.scan(
         FilterExpression=Attr('device_type').eq('sprinkler'))
     for item in response['Items']:
-        # convert database string datetime to datetime datatype
-        print(f"device_timestamp: {item['device_timestamp']}")
-        db_datetime = (datetime.fromisoformat(item['device_timestamp']))
-        current_time = datetime.now()
-        print(f"current_timestamp: {current_time}")
-        # (compare with current time)
-        duration = current_time-db_datetime
-        duration_in_seconds = duration.total_seconds()
-        minutes = divmod(duration_in_seconds, 60)[0]
-        print(f"minutes: {minutes}")
-        if minutes >= 0:
-            # if yes, turn OFF sprinkler, sensor alarm, SNS, IoT MQTT
-            update_device_status(item['device_id'])
-            # Get all sensors in anomaly attached to this sprinkler from the anomaly table and turn off alarm
-            anomaly_response = anomaly_table.scan(
-                FilterExpression=Attr('device_id').eq(item['device_id']))
-            anomaly_sensors = []
-            for record in anomaly_response['Items']:
-                anomaly_sensors.append(record['sensor_id'])
-            anomaly_sensors = set(anomaly_sensors)
+        if item['device_status'] == 'ON':
+            # print("status ON", item['device_id'] )
+            # # convert database string datetime to datetime datatype
+            # print(f"device_timestamp: {item['device_timestamp']}")
+            # db_datetime = (datetime.fromisoformat(item['device_timestamp']))
+            # current_time = datetime.now()
+            # print(f"current_timestamp: {current_time}")
+            # # (compare with current time)
+            # duration = current_time-db_datetime
+            # duration_in_seconds = duration.total_seconds()
+            # minutes = divmod(duration_in_seconds, 60)[0]
+            # print(f"minutes: {minutes}")
+            # if minutes >= 1:
+            #     # check anomaly table for that timestamp for a sprinkler for any records
+            #     print("minute > 1")
+            #     time.sleep(30)
+            sensor_anomaly_response = anomaly_table.scan(
+                FilterExpression=Attr('timestamp').eq(sensor_timestamp) & Attr('sprinkler_id').eq(item['device_id']))
+            print(f"Count: {sensor_anomaly_response['Count']}")
+            if(sensor_anomaly_response['Count']) == 0:
 
-            for sensor in anomaly_sensors:
-                # check if this sensor status is ON.then update to off.
-                sensor_resp = device_table.scan(
-                    FilterExpression=Attr('device_id').eq('sensor'))
-                for item in sensor_resp['Items']:
-                    if item['device_status'] == 'ON':
-                        update_device_status(sensor)
+                # if yes, turn OFF sprinkler, sensor alarm, SNS, IoT MQTT
+                print("update sprinkler status")
+                update_device_status(item['device_id'])
 
-            # send sns notification
-            print("SNS starting")
-            message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
-            sns_client.publish(TopicArn=topic_arn, Message=message)
-            print("sns published. check email")
+                # Get all sensors in anomaly attached to this sprinkler from the anomaly table and turn off alarm
+                anomaly_response = anomaly_table.scan(
+                    FilterExpression=Attr('device_id').eq(item['device_id']))
+                anomaly_sensors = []
+                for record in anomaly_response['Items']:
+                    anomaly_sensors.append(record['sensor_id'])
+                anomaly_sensors = set(anomaly_sensors)
 
-            # publish to iot core
-            # # chanage required for topic. need to check
-            print("MQTT starting")
-            notification = {"message": message}
-            response = iot_client.publish(
-                topic='weather_data', qos=0, payload=json.dumps(notification))
-            print("MQTT published")
+                for sensor in anomaly_sensors:
+                    # check if this sensor status is ON.then update to off.
+                    sensor_resp = device_table.scan(
+                        FilterExpression=Attr('device_id').eq(sensor))
+                    for item in sensor_resp['Items']:
+                        if item['device_status'] == 'ON':
+                            print("update sensor status")
+                            print(f"Sensor name:{sensor}")
+                            update_device_status(sensor)
+
+                # send sns notification
+                print("SNS starting")
+                message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
+                sns_client.publish(TopicArn=topic_arn, Message=message)
+                print("sns published. check email")
+
+                # publish to iot core
+                # # chanage required for topic. need to check
+                print("MQTT starting")
+                notification = {"message": message}
+                response = iot_client.publish(
+                    topic='weather_data', qos=0, payload=json.dumps(notification))
+                print("MQTT published")
