@@ -7,3 +7,6 @@ pip install AWSIoTPythonSDK
 pip install boto3
 pip install cloudpathlib
 pip install schedule
+aws configure
+python3 soil_sensor_publish.py
+
