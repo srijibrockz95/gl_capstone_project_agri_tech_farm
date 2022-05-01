@@ -77,7 +77,7 @@ def Diff(li1, li2):
 
 def sprinkler_sensor_status_off():
     print("Inside method")
-
+    print("sensor timestamp", sensor_timestamp)
     timestamp_of_the_event = (datetime.fromisoformat(sensor_timestamp))
     # subtract 2 mins
     two_minute = timedelta(minutes=2)
@@ -87,6 +87,7 @@ def sprinkler_sensor_status_off():
     device_sprinklers = []
     device_sensors = []
     print("Test1")
+    print("timestamp 2 mins before: ", timestamp_twomins_before)
     # get master list of sprinklers and sensors from table
     devices_response = device_table.scan()
     for device in devices_response['Items']:
@@ -124,18 +125,18 @@ def sprinkler_sensor_status_off():
     if(len(sprinkler_turn_off_list) > 0):
         for sp in sprinkler_turn_off_list:
             update_device_status(sp)
-        print("Test5")
-        # send sns notification
-        print("SNS starting")
-        message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
-        sns_client.publish(TopicArn=topic_arn, Message=message)
-        print("sns published. check email")
+            print("Test5")
+            # send sns notification
+            print("SNS starting")
+            message = f"\n Hello, \n\n Please turn OFF the sprinkler: {sp}."
+            sns_client.publish(TopicArn=topic_arn, Message=message)
+            print("sns published. check email")
 
-        # publish to iot core
-        # # chanage required for topic. need to check
-        print("MQTT starting")
-        notification = {"message": message}
-        response = iot_client.publish(
-            topic='weather_data', qos=0, payload=json.dumps(notification))
-        print("MQTT published")
+            # publish to iot core
+            # # chanage required for topic. need to check
+            print("MQTT starting")
+            notification = {"message": message}
+            response = iot_client.publish(
+                topic='weather_data', qos=0, payload=json.dumps(notification))
+            print("MQTT published")
     print("Test6")
