@@ -86,7 +86,7 @@ def sprinkler_sensor_status_off():
     sensors = []
     device_sprinklers = []
     device_sensors = []
-
+    print("Test1")
     # get master list of sprinklers and sensors from table
     devices_response = device_table.scan()
     for device in devices_response['Items']:
@@ -94,31 +94,37 @@ def sprinkler_sensor_status_off():
             device_sprinklers.append(device['device_id'])
         elif device['device_type'] == 'sensor' and device['device_status'] == 'ON':
             device_sensors.append(device['device_id'])
-
+    print("Test2")
     # get list of anomaly records 2 mins before the current timestamp
     # response = anomaly_table.query(IndexName="timestampIndex",
     #                                KeyConditionExpression=Key('timestamp').gte(timestamp_twomins_before))
     response = anomaly_table.scan(FilterExpression=Attr(
         'timestamp').gte(timestamp_twomins_before))
-    print(f"Count: {response['Count']}")
+    print(f"Anomaly records Count from 2 mins: {response['Count']}")
     # get the list of anomaly sprinklers and sensors. They do not have to turn off.
     # sprinklers and sensors not in this list has to be off
     for item in response['Items']:
-        sprinklers.append(item['sprinkler_id'])
-        sensors.append(item['sensor_id'])
-    sprinklers = set(sprinklers)
+        print("sprinkler_id: ", item)
+        if(item['sensor_id'] != 'owm'):
+            sprinklers.append(item['sprinkler_id'])
+            sensors.append(item['sensor_id'])
 
+    sprinklers = list(set(sprinklers))
+    print("Test3")
     # handle sensor turn off
     sensor_turn_off_list = Diff(device_sensors, sensors)
-    for se in sensor_turn_off_list:
-        update_device_status(se)
-
+    print("List of sensors to turn off: ", sensor_turn_off_list)
+    if len(sensor_turn_off_list) > 0:
+        for se in sensor_turn_off_list:
+            update_device_status(se)
+    print("Test4")
     # handle sprinkler off
     sprinkler_turn_off_list = Diff(device_sprinklers, sprinklers)
+    print("List of sprinklers to turn off: ", sprinkler_turn_off_list)
     if(len(sprinkler_turn_off_list) > 0):
         for sp in sprinkler_turn_off_list:
             update_device_status(sp)
-
+        print("Test5")
         # send sns notification
         print("SNS starting")
         message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
@@ -132,3 +138,4 @@ def sprinkler_sensor_status_off():
         response = iot_client.publish(
             topic='weather_data', qos=0, payload=json.dumps(notification))
         print("MQTT published")
+    print("Test6")
