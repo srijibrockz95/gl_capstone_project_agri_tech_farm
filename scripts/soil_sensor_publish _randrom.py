@@ -43,8 +43,8 @@ class AWS:
         global moisture_counter
         temp = 6 + (temp_counter % 24)
         moisture = 74 - (moisture_counter % 24)
-        temp_counter += 0.0583
-        moisture_counter += 0.0583
+        temp_counter += 0.003
+        moisture_counter += 0.003
         # Iterating through the items in device configuration dictionary, every second
         message = {}
         temp_value = float(random.normalvariate(temp, 3.1))
