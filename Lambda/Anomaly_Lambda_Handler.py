@@ -15,7 +15,10 @@ anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
 device_table_name = 'device_data'
 device_table = boto3.resource('dynamodb').Table(device_table_name)
 # owm
-# owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
+owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
+# 104bb94d45e91d4f3a7d97053708757b
+# c0adabdd390870a2ae001b8c2ba65496
+# ba63b2274f39f96837a0e2613ee0bec1
 
 # sns
 sns_client = boto3.client('sns', region_name='us-east-1')
@@ -143,8 +146,10 @@ def process_anomaly():
         # if the record count is >= 3, send sns, publish to iot, and turn sprinkler ON in db.
         scan_resp = anomaly_table.scan(FilterExpression=Attr('timestamp').eq(
             timestamp) & Attr('sprinkler_id').eq(sprinkler_id))
-        owm_resp = anomaly_table.scan(FilterExpression=Attr('timestamp').eq(
-            timestamp) & Attr('sensor_id').eq('owm'))
+        owm_resp = anomaly_table.query(KeyConditionExpression=Key(
+            'sensor_id').eq('owm') & Key('timestamp').eq(timestamp))
+        # =Attr('timestamp').eq(
+        # timestamp) & Attr('sensor_id').eq('owm'))
         owm_anomaly = '\n '.join(str(item) for item in owm_resp['Items'])
         sensors_in_alarm = []
         print(f"Count: {scan_resp['Count']}")

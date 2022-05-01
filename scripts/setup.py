@@ -66,8 +66,8 @@ def create_anomaly_data_table(dynamodb):
             }
         ],
         ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapacityUnits': 5
+            'ReadCapacityUnits': 20,
+            'WriteCapacityUnits': 20
         }
     )
     print("Table status:", table.table_status)

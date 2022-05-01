@@ -25,7 +25,8 @@ class AWS:
         self.root_path = PATH_TO_ROOT_CA
         self.myAWSIoTMQTTClient = AWSIoTPyMQTT.AWSIoTMQTTClient(self.client_id)
         self.myAWSIoTMQTTClient.configureEndpoint(ENDPOINT, MQTT_PORT)
-        self.myAWSIoTMQTTClient.configureCredentials(self.root_path, self.pvt_key_path, self.cert_path)
+        self.myAWSIoTMQTTClient.configureCredentials(
+            self.root_path, self.pvt_key_path, self.cert_path)
         self._connect()
         self.temp_counter = 0
         self.moisture_counter = 0
@@ -98,7 +99,8 @@ if __name__ == '__main__':
     while True:
         try:
             for device in thing_list:
-                scheduler.enterabs(now + loopCount, 1, device["ThingName"].publish)
+                scheduler.enterabs(now + loopCount, 1,
+                                   device["ThingName"].publish)
             loopCount += 1
             scheduler.run()
         except KeyboardInterrupt:
