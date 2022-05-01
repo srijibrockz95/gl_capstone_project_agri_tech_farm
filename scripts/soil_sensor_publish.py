@@ -38,15 +38,15 @@ class AWS:
     # Before publishing we are configuring message to be published on MQTT
     def publish(self):
         print('Begin Publish')
-        temp = 16 + (self.temp_counter % 6)
-        moisture = 64 - (self.moisture_counter % 6)
-        self.temp_counter += 0.03
-        self.moisture_counter += 0.03
+        temp = 6 + (self.temp_counter % 24)
+        moisture = 74 - (self.moisture_counter % 24)
+        self.temp_counter += 0.0583
+        self.moisture_counter += 0.0583
         # Iterating through the items in device configuration dictionary, every second
         message = {}
-        temp_value = float(random.normalvariate(temp, 0.1))
+        temp_value = float(random.normalvariate(temp, 3.1))
         temp_value = round(temp_value, 1)
-        moisture_value = float(random.normalvariate(moisture, 0.1))
+        moisture_value = float(random.normalvariate(moisture, 3.1))
         moisture_value = round(moisture_value, 1)
         timestamp = str(datetime.datetime.now())
         message['sensor_id'] = self.device_id
