@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # # Step 3: Create things, thing groups, thing type in AWS Iot Core
     status = aws_iot_core_create_bulk_things()
     if not status:
-         exit()
+        exit()
 
     # # Step 4: Adding things to thing groups
     add_thing_to_thing_group()
@@ -36,12 +36,13 @@ if __name__ == "__main__":
     aws_iot_core_attach_certificates()
 
     # One time use while setting up tables.
-    dynamodb = boto3.resource('dynamodb', 'us-east-1')
+    # dynamodb = boto3.resource('dynamodb', 'us-east-1')
     # sns_client = boto3.client('sns', region_name='us-east-1')
     # create_aggregate_data_table(dynamodb=dynamodb)
     # create_anomaly_data_table(dynamodb=dynamodb)
-    create_device_data_table(dynamodb=dynamodb)
-    time.sleep(30)
-    insert_device_data(dynamodb=dynamodb)
+    # create_gsi_anomaly_table()
+    # create_device_data_table(dynamodb=dynamodb)
+    # time.sleep(30)
+    # insert_device_data(dynamodb=dynamodb)
     # create_sns(sns_client=sns_client)
-    print("Done..")
+    # print("Done..")

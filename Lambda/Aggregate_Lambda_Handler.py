@@ -1,4 +1,5 @@
-from datetime import datetime, time
+from datetime import datetime, timedelta
+import time
 import json
 from urllib import response
 import boto3
@@ -70,66 +71,60 @@ def update_device_status(device_id):
     print("device_data table updated")
 
 
+def Diff(li1, li2):
+    return list(set(li1) - set(li2)) + list(set(li2) - set(li1))
+
+
 def sprinkler_sensor_status_off():
+    print("Inside method")
+    timestamp_of_the_event = (datetime.fromisoformat(sensor_timestamp))
+    # subtract 2 mins
+    two_minute = timedelta(minutes=2)
+    timestamp_twomins_before = str(timestamp_of_the_event - two_minute)
+    sprinklers = []
+    sensors = []
+    device_sprinklers = []
+    device_sensors = []
 
-    print("inside method")
-    # loop through all sprinklers and check if the db timestamp is >= 10 mins
-    response = device_table.scan(
-        FilterExpression=Attr('device_type').eq('sprinkler'))
+    # get master list of sprinklers and sensors from table
+    devices_response = device_table.scan()
+    for device in devices_response['Items']:
+        if device['device_type'] == 'sprinkler' and device['device_status'] == 'ON':
+            device_sprinklers.append(device['device_id'])
+        elif device['device_type'] == 'sensor' and device['device_status'] == 'ON':
+            device_sensors.append(device['device_id'])
+
+    # get list of anomaly records 2 mins before the current timestamp
+    response = anomaly_table.query(IndexName="timestampIndex",
+                                   KeyConditionExpression=Key('timestamp').gte(timestamp_twomins_before))
+    print(f"Count: {response['Count']}")
+    # get the list of anomaly sprinklers and sensors. They do not have to turn off.
+    # sprinklers and sensors not in this list has to be off
     for item in response['Items']:
-        if item['device_status'] == 'ON':
-            # print("status ON", item['device_id'] )
-            # # convert database string datetime to datetime datatype
-            # print(f"device_timestamp: {item['device_timestamp']}")
-            # db_datetime = (datetime.fromisoformat(item['device_timestamp']))
-            # current_time = datetime.now()
-            # print(f"current_timestamp: {current_time}")
-            # # (compare with current time)
-            # duration = current_time-db_datetime
-            # duration_in_seconds = duration.total_seconds()
-            # minutes = divmod(duration_in_seconds, 60)[0]
-            # print(f"minutes: {minutes}")
-            # if minutes >= 1:
-            #     # check anomaly table for that timestamp for a sprinkler for any records
-            #     print("minute > 1")
-            #     time.sleep(30)
-            sensor_anomaly_response = anomaly_table.scan(
-                FilterExpression=Attr('timestamp').eq(sensor_timestamp) & Attr('sprinkler_id').eq(item['device_id']))
-            print(f"Count: {sensor_anomaly_response['Count']}")
-            if(sensor_anomaly_response['Count']) == 0:
+        sprinklers.append(item['sprinkler_id'])
+        sensors.append(item['sensor_id'])
 
-                # if yes, turn OFF sprinkler, sensor alarm, SNS, IoT MQTT
-                print("update sprinkler status")
-                update_device_status(item['device_id'])
+    # handle sensor turn off
+    sensor_turn_off_list = Diff(device_sensors, sensors)
+    for se in sensor_turn_off_list:
+        update_device_status(se)
 
-                # Get all sensors in anomaly attached to this sprinkler from the anomaly table and turn off alarm
-                anomaly_response = anomaly_table.scan(
-                    FilterExpression=Attr('device_id').eq(item['device_id']))
-                anomaly_sensors = []
-                for record in anomaly_response['Items']:
-                    anomaly_sensors.append(record['sensor_id'])
-                anomaly_sensors = set(anomaly_sensors)
+    # handle sprinkler off
+    sprinkler_turn_off_list = Diff(device_sprinklers, sprinklers)
+    if(len(sprinkler_turn_off_list) > 0):
+        for sp in sprinkler_turn_off_list:
+            update_device_status(sp)
 
-                for sensor in anomaly_sensors:
-                    # check if this sensor status is ON.then update to off.
-                    sensor_resp = device_table.scan(
-                        FilterExpression=Attr('device_id').eq(sensor))
-                    for item in sensor_resp['Items']:
-                        if item['device_status'] == 'ON':
-                            print("update sensor status")
-                            print(f"Sensor name:{sensor}")
-                            update_device_status(sensor)
+        # send sns notification
+        print("SNS starting")
+        message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
+        sns_client.publish(TopicArn=topic_arn, Message=message)
+        print("sns published. check email")
 
-                # send sns notification
-                print("SNS starting")
-                message = f"\n Hello, \n\n Please turn OFF the sprinkler: {item['device_id']}."
-                sns_client.publish(TopicArn=topic_arn, Message=message)
-                print("sns published. check email")
-
-                # publish to iot core
-                # # chanage required for topic. need to check
-                print("MQTT starting")
-                notification = {"message": message}
-                response = iot_client.publish(
-                    topic='weather_data', qos=0, payload=json.dumps(notification))
-                print("MQTT published")
+        # publish to iot core
+        # # chanage required for topic. need to check
+        print("MQTT starting")
+        notification = {"message": message}
+        response = iot_client.publish(
+            topic='weather_data', qos=0, payload=json.dumps(notification))
+        print("MQTT published")
