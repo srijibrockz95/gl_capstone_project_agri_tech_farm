@@ -77,6 +77,7 @@ def Diff(li1, li2):
 
 def sprinkler_sensor_status_off():
     print("Inside method")
+
     timestamp_of_the_event = (datetime.fromisoformat(sensor_timestamp))
     # subtract 2 mins
     two_minute = timedelta(minutes=2)
@@ -95,14 +96,17 @@ def sprinkler_sensor_status_off():
             device_sensors.append(device['device_id'])
 
     # get list of anomaly records 2 mins before the current timestamp
-    response = anomaly_table.query(IndexName="timestampIndex",
-                                   KeyConditionExpression=Key('timestamp').gte(timestamp_twomins_before))
+    # response = anomaly_table.query(IndexName="timestampIndex",
+    #                                KeyConditionExpression=Key('timestamp').gte(timestamp_twomins_before))
+    response = anomaly_table.scan(FilterExpression=Attr(
+        'timestamp').gte(timestamp_twomins_before))
     print(f"Count: {response['Count']}")
     # get the list of anomaly sprinklers and sensors. They do not have to turn off.
     # sprinklers and sensors not in this list has to be off
     for item in response['Items']:
         sprinklers.append(item['sprinkler_id'])
         sensors.append(item['sensor_id'])
+    sprinklers = set(sprinklers)
 
     # handle sensor turn off
     sensor_turn_off_list = Diff(device_sensors, sensors)
