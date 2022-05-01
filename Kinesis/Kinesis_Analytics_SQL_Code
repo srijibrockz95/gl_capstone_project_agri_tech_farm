@@ -16,13 +16,13 @@ CREATE OR REPLACE  PUMP "STREAM_AGGREGATE_PUMP" AS INSERT INTO "AGGREGATE_SQL_ST
 -- Aggregate function COUNT|AVG|MAX|MIN|SUM|STDDEV_POP|STDDEV_SAMP|VAR_POP|VAR_SAMP)
 SELECT STREAM "sprinkler_id", "sensor_id", 
 STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '2' MINUTE) as "sensor_timestamp", 
-"sensor_lat", "sensor_long",
 avg("sensor_temperature") as "avg_temperature", max("sensor_temperature") as "max_temperature", 
 min("sensor_temperature") as "min_temperature", avg("sensor_moisture") as "avg_moisture", 
-max("sensor_moisture") as "max_moisture", min("sensor_moisture") as "min_moisture"
+max("sensor_moisture") as "max_moisture", min("sensor_moisture") as "min_moisture",
+"sensor_lat", "sensor_long"
 FROM "SOURCE_SQL_STREAM_001"
 -- Uses a 10-second tumbling time window
-GROUP BY "sprinkler_id", "sensor_id", STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '2' MINUTE), "sensor_lat", "sensor_long";
+GROUP BY "sensor_id", "sprinkler_id",  STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '2' MINUTE), "sensor_lat", "sensor_long";
 
 CREATE OR REPLACE STREAM "ANOMALY_SQL_STREAM" (
     sprinkler_id VARCHAR(16),
