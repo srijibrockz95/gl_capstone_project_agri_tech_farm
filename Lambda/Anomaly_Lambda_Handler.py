@@ -12,11 +12,11 @@ from decimal import Decimal
 # Dynamodb
 anomaly_table_name = 'anomaly_data'
 anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
-device_table_name = 'device_data'
+device_table_name = 'device_state'
 device_table = boto3.resource('dynamodb').Table(device_table_name)
 # owm
-owm = OWM('12d6e473b26dddd50e95a73e1ce0a648')
-# 104bb94d45e91d4f3a7d97053708757b
+owm = OWM('104bb94d45e91d4f3a7d97053708757b')
+# 12d6e473b26dddd50e95a73e1ce0a648
 # c0adabdd390870a2ae001b8c2ba65496
 # ba63b2274f39f96837a0e2613ee0bec1
 
@@ -74,8 +74,11 @@ def lambda_handler(event, context):
             print(f"owm_humidity: {owm_humidity}")
             # # ignore seconds. considering only minutes.
             owm_timestamp = timestamp
-            # owm_temperature = 25
-            # owm_humidity = 30
+            # Keeping 2 sprinklers out of anomaly, for testing purpose.
+            if(sprinkler_id == "Sprinkler1" or sprinkler_id == "Sprinkler3"):
+                owm_humidity = 61
+                owm_temperature = 18
+
             # owm anomaly check and processes followed
             if owm_temperature >= 20 or owm_humidity <= 60:
                 owm_alert_flag = True
@@ -83,7 +86,7 @@ def lambda_handler(event, context):
 
                 # insert both anomaly data from sensor and owm in dynamodb
                 sensor_anomaly = {'sprinkler_id': sprinkler_id, 'sensor_id': sensor_id, 'timestamp': timestamp,
-                                  'temperature': temperature, 'moisture': moisture, 'sensor_lat': sensor_lat, 'sensor_long': sensor_long}
+                                  'temperature': temperature, 'moisture': moisture}
                 owm_anomaly = {'sensor_id': 'owm', 'timestamp': owm_timestamp,
                                'temperature': temperature, 'humidity': owm_humidity}
                 print(f"owm_anomaly: {owm_anomaly}")
@@ -101,9 +104,6 @@ def lambda_handler(event, context):
                 print(
                     f'OWM anomaly inserted')
 
-                # turn on sensor alarm in device table
-                update_device_status(sensor_id)
-
             else:
                 print(
                     f"No anomaly in OWM data for the timestamp: {owm_timestamp}")
@@ -119,7 +119,7 @@ def get_sprinkler_data(sprinkler_id):
 
 
 def update_device_status(device_id):
-    print("device_data status update starting")
+    print("device_data status update starting for: ", device_id)
     current_datetime = str(datetime.now())
     device_table.update_item(
         Key={
@@ -132,7 +132,7 @@ def update_device_status(device_id):
             ':val2': current_datetime
 
         })
-    print("device_data table updated")
+    print("device_data table updated for: ", device_id)
 
 
 def process_anomaly():
@@ -154,10 +154,11 @@ def process_anomaly():
         sensors_in_alarm = []
         print(f"Count: {scan_resp['Count']}")
         if scan_resp['Count'] >= 3:
-            # check sensor ids are different
+            # check sensor ids are different : sp1 sensor0, sp1 sensor 1, sp1 sensr 2
             for item in scan_resp['Items']:
                 if item['sensor_id'] not in sensors_in_alarm:
                     sensors_in_alarm.append(item['sensor_id'])
+
             alarm_sensors_list = ', '.join(str(x) for x in sensors_in_alarm)
         if(len(sensors_in_alarm) >= 3):
             anomaly_data_for_3_sensors = '\n '.join(
@@ -172,6 +173,10 @@ def process_anomaly():
 
             # update sprinkler status in sprinkler table.
             update_device_status(sprinkler_id)
+
+            for s in sensors_in_alarm:
+                # turn on sensor alarm in device table
+                update_device_status(s)
 
             # publish to iot core
             # # chanage required for topic. need to check

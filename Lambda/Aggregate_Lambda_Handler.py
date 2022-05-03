@@ -9,7 +9,7 @@ from boto3.dynamodb.conditions import Key, Attr
 
 
 # first scan sprinkler table and get all data
-table_name = 'device_data'
+table_name = 'device_state'
 device_table = boto3.resource('dynamodb').Table(table_name)
 anomaly_table_name = 'anomaly_data'
 anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
@@ -43,19 +43,18 @@ def lambda_handler(event, context):
         avg_moisture = float(readings['AVG_MOISTURE'])
         max_moisture = float(readings['MAX_MOISTURE'])
         min_moisture = float(readings['MIN_MOISTURE'])
-        sensor_lat = float(readings['SENSOR_LAT'])
-        sensor_long = float(readings['SENSOR_LONG'])
+
         table.put_item(Item={'sprinkler_id': sprinklerid, 'sensor_id': sensor_id, 'sensor_timestamp': sensor_timestamp,
                              'avg_temp': str(avg_temp), 'max_temp': str(max_temp),
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
-                             'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
+                             'min_moisture': str(min_moisture)})
         print("Inserted to Aggregate table")
     sprinkler_sensor_status_off()
     sensor_timestamp = ""
 
 
 def update_device_status(device_id):
-    print("device_data status update starting")
+    print("device_data status update starting for ", device_id)
     current_datetime = str(datetime.now())
     device_table.update_item(
         Key={
@@ -68,7 +67,7 @@ def update_device_status(device_id):
             ':val2': current_datetime
 
         })
-    print("device_data table updated")
+    print("device_data table updated for", device_id)
 
 
 def Diff(li1, li2):
@@ -99,44 +98,48 @@ def sprinkler_sensor_status_off():
     # get list of anomaly records 2 mins before the current timestamp
     # response = anomaly_table.query(IndexName="timestampIndex",
     #                                KeyConditionExpression=Key('timestamp').gte(timestamp_twomins_before))
-    response = anomaly_table.scan(FilterExpression=Attr(
-        'timestamp').gte(timestamp_twomins_before))
-    print(f"Anomaly records Count from 2 mins: {response['Count']}")
-    # get the list of anomaly sprinklers and sensors. They do not have to turn off.
-    # sprinklers and sensors not in this list has to be off
-    for item in response['Items']:
-        print("sprinkler_id: ", item)
-        if(item['sensor_id'] != 'owm'):
-            sprinklers.append(item['sprinkler_id'])
-            sensors.append(item['sensor_id'])
 
-    sprinklers = list(set(sprinklers))
-    print("Test3")
-    # handle sensor turn off
-    sensor_turn_off_list = Diff(device_sensors, sensors)
-    print("List of sensors to turn off: ", sensor_turn_off_list)
-    if len(sensor_turn_off_list) > 0:
-        for se in sensor_turn_off_list:
-            update_device_status(se)
-    print("Test4")
-    # handle sprinkler off
-    sprinkler_turn_off_list = Diff(device_sprinklers, sprinklers)
-    print("List of sprinklers to turn off: ", sprinkler_turn_off_list)
-    if(len(sprinkler_turn_off_list) > 0):
-        for sp in sprinkler_turn_off_list:
-            update_device_status(sp)
-            print("Test5")
-            # send sns notification
-            print("SNS starting")
-            message = f"\n Hello, \n\n Please turn OFF the sprinkler: {sp}."
-            sns_client.publish(TopicArn=topic_arn, Message=message)
-            print("sns published. check email")
+    if len(device_sensors) != 0:
+        response = anomaly_table.scan(FilterExpression=Attr(
+            'timestamp').eq(sensor_timestamp))
+        print(f"Anomaly records Count from 2 mins: {response['Count']}")
+        # get the list of anomaly sprinklers and sensors. They do not have to turn off.
+        # sprinklers and sensors not in this list has to be off
+        for item in response['Items']:
+            print("sprinkler_id: ", item)
+            if(item['sensor_id'] != 'owm'):
+                sprinklers.append(item['sprinkler_id'])
+                sensors.append(item['sensor_id'])
 
-            # publish to iot core
-            # # chanage required for topic. need to check
-            print("MQTT starting")
-            notification = {"message": message}
-            response = iot_client.publish(
-                topic='weather_data', qos=0, payload=json.dumps(notification))
-            print("MQTT published")
-    print("Test6")
+        sprinklers = list(set(sprinklers))
+        print("Test3")
+        # handle sensor turn off
+        sensor_turn_off_list = Diff(device_sensors, sensors)
+        print("List of sensors to turn off: ", sensor_turn_off_list)
+        if len(sensor_turn_off_list) > 0:
+            for se in sensor_turn_off_list:
+                update_device_status(se)
+        print("Test4")
+        # handle sprinkler off
+        sprinkler_turn_off_list = Diff(device_sprinklers, sprinklers)
+        print("List of sprinklers to turn off: ", sprinkler_turn_off_list)
+        if(len(sprinkler_turn_off_list) > 0):
+            for sp in sprinkler_turn_off_list:
+                update_device_status(sp)
+                print("Test5")
+                # send sns notification
+                print("SNS starting")
+                message = f"\n Hello, \n\n Please turn OFF the sprinkler: {sp}."
+                sns_client.publish(TopicArn=topic_arn, Message=message)
+                print("sns published. check email")
+
+                # publish to iot core
+                # # chanage required for topic. need to check
+                print("MQTT starting")
+                notification = {"message": message}
+                response = iot_client.publish(
+                    topic='weather_data', qos=0, payload=json.dumps(notification))
+                print("MQTT published")
+                print("Test6")
+    else:
+        print("No sensors and sprinklers with status ON in device data table")
