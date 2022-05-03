@@ -28,8 +28,6 @@ class AWS:
         self.myAWSIoTMQTTClient.configureEndpoint(ENDPOINT, MQTT_PORT)
         self.myAWSIoTMQTTClient.configureCredentials(self.root_path, self.pvt_key_path, self.cert_path)
         self._connect()
-        #self.temp_counter = 0
-        #self.moisture_counter = 0
 
     # Connect method to establish connection with AWS IoT core MQTT
     def _connect(self):
