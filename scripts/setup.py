@@ -12,7 +12,7 @@ def create_aggregate_data_table(dynamodb):
         TableName='aggregate_data',
         KeySchema=[
             {
-                'AttributeName': 'sprinkler_id',
+                'AttributeName': 'sensor_id',
                 'KeyType': 'HASH'
             },
             {
@@ -22,7 +22,7 @@ def create_aggregate_data_table(dynamodb):
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'sprinkler_id',
+                'AttributeName': 'sensor_id',
                 'AttributeType': 'S'
             },
             {
