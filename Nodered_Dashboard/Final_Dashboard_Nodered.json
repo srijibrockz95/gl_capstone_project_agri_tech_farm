@@ -191,11 +191,11 @@
         "cert": "",
         "key": "",
         "ca": "",
-        "certname": "Sensor0.pem.crt",
-        "keyname": "Sensor0.pem.key",
+        "certname": "a4a7ceeae7bb94f49ad9521f9bbd8b965128f187a586750f696d753625b44b74-certificate.pem.crt",
+        "keyname": "a4a7ceeae7bb94f49ad9521f9bbd8b965128f187a586750f696d753625b44b74-private.pem.key",
         "caname": "AmazonRootCA1.pem",
         "servername": "",
-        "verifyservercert": true,
+        "verifyservercert": false,
         "alpnprotocol": ""
     },
     {
@@ -225,11 +225,12 @@
     {
         "id": "58a7b4edfef69a8f",
         "type": "ui_group",
-        "name": "Group 1",
-        "tab": "",
+        "name": "Sensor_temp",
+        "tab": "78a6d2704a88c971",
         "order": 1,
         "disp": true,
-        "width": 6
+        "width": "6",
+        "collapse": false
     },
     {
         "id": "723c349c486596a6",
@@ -270,6 +271,14 @@
         "disp": true,
         "width": "6",
         "collapse": false
+    },
+    {
+        "id": "78a6d2704a88c971",
+        "type": "ui_tab",
+        "name": "Graphs",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
     },
     {
         "id": "e2912728dc2cfb05",
@@ -560,9 +569,9 @@
                 "vt": "str"
             }
         ],
-        "repeat": "",
+        "repeat": "2",
         "crontab": "",
-        "once": true,
+        "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payloadType": "date",
@@ -1613,5 +1622,1476 @@
         "x": 2290,
         "y": 640,
         "wires": []
+    },
+    {
+        "id": "6eb76bbbfb72c72a",
+        "type": "mqtt in",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "topic": "iot/agritech",
+        "qos": "1",
+        "datatype": "auto",
+        "broker": "ca472ed321c3b7e0",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "x": 110,
+        "y": 1660,
+        "wires": [
+            [
+                "b7bce9556898cbe3"
+            ]
+        ]
+    },
+    {
+        "id": "b7bce9556898cbe3",
+        "type": "json",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 710,
+        "y": 1680,
+        "wires": [
+            [
+                "746c9108238c7e3e",
+                "0ed9d51b79fd23dc"
+            ]
+        ]
+    },
+    {
+        "id": "746c9108238c7e3e",
+        "type": "switch",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor_status",
+        "property": "payload.sensor_id",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "Sensor0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor3",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor4",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor5",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor6",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor7",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor8",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor9",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor10",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor11",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor12",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor13",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor14",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor15",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor16",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor17",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor18",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Sensor19",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 20,
+        "x": 1020,
+        "y": 1880,
+        "wires": [
+            [
+                "50a4aed7cffd609d"
+            ],
+            [
+                "51231e20ed0c91be"
+            ],
+            [
+                "f3631e330f9253d8"
+            ],
+            [
+                "ededaa9a10a56b92"
+            ],
+            [
+                "f01a2c3317c630b0"
+            ],
+            [
+                "cf401637fd25f9d7"
+            ],
+            [
+                "4b82654762211b4c"
+            ],
+            [
+                "fe6413f3fd4daf6b"
+            ],
+            [
+                "cfd6ae1a46b810c8"
+            ],
+            [
+                "1829d25cae24d132"
+            ],
+            [
+                "96843c2d96a78736"
+            ],
+            [
+                "ebb54e5300a9d308"
+            ],
+            [
+                "eec49e12595b97d2"
+            ],
+            [
+                "38ba1f6d94264678"
+            ],
+            [
+                "7d79599f3c0a9194"
+            ],
+            [
+                "e6ae5bf74c505072"
+            ],
+            [
+                "98e4670815c9fd01"
+            ],
+            [
+                "e5ac732a7425d079"
+            ],
+            [
+                "001087ed1bb0b3ec"
+            ],
+            [
+                "f31893645b5fd419"
+            ]
+        ]
+    },
+    {
+        "id": "50a4aed7cffd609d",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor0",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1460,
+        "wires": [
+            [
+                "737fc54cf8a09931"
+            ]
+        ]
+    },
+    {
+        "id": "51231e20ed0c91be",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor1",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1500,
+        "wires": [
+            [
+                "f894e04beab19751"
+            ]
+        ]
+    },
+    {
+        "id": "f3631e330f9253d8",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor2",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1540,
+        "wires": [
+            [
+                "7a0ed0bf500852cb"
+            ]
+        ]
+    },
+    {
+        "id": "ededaa9a10a56b92",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor3",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1580,
+        "wires": [
+            [
+                "5589622f1d43c1ae"
+            ]
+        ]
+    },
+    {
+        "id": "f01a2c3317c630b0",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor4",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1620,
+        "wires": [
+            [
+                "4baf3330166a4119"
+            ]
+        ]
+    },
+    {
+        "id": "cf401637fd25f9d7",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor5",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1660,
+        "wires": [
+            [
+                "eb79b3e6adcdc2a2"
+            ]
+        ]
+    },
+    {
+        "id": "4b82654762211b4c",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor6",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1700,
+        "wires": [
+            [
+                "e6f81767d35fac22"
+            ]
+        ]
+    },
+    {
+        "id": "fe6413f3fd4daf6b",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor7",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1740,
+        "wires": [
+            [
+                "587f7b5a39e59db9"
+            ]
+        ]
+    },
+    {
+        "id": "cfd6ae1a46b810c8",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor8",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1780,
+        "wires": [
+            [
+                "3178cdd04f3b595b"
+            ]
+        ]
+    },
+    {
+        "id": "1829d25cae24d132",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor9",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1820,
+        "wires": [
+            [
+                "4855a755b0277961"
+            ]
+        ]
+    },
+    {
+        "id": "96843c2d96a78736",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor10",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1860,
+        "wires": [
+            [
+                "8351ef7677cdc893"
+            ]
+        ]
+    },
+    {
+        "id": "ebb54e5300a9d308",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor11",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1900,
+        "wires": [
+            [
+                "89b55cab1c22da94"
+            ]
+        ]
+    },
+    {
+        "id": "eec49e12595b97d2",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor12",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1940,
+        "wires": [
+            [
+                "41fc933a2796b4ff"
+            ]
+        ]
+    },
+    {
+        "id": "38ba1f6d94264678",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor13",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1980,
+        "wires": [
+            [
+                "83ab6788520eacd1"
+            ]
+        ]
+    },
+    {
+        "id": "7d79599f3c0a9194",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor14",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 2020,
+        "wires": [
+            [
+                "fb65bef80a8f95d9"
+            ]
+        ]
+    },
+    {
+        "id": "e6ae5bf74c505072",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor15",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 2060,
+        "wires": [
+            [
+                "b2932abb7bcc7fbd"
+            ]
+        ]
+    },
+    {
+        "id": "98e4670815c9fd01",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor16",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 2100,
+        "wires": [
+            [
+                "404907384061e331"
+            ]
+        ]
+    },
+    {
+        "id": "e5ac732a7425d079",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor17",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 2140,
+        "wires": [
+            [
+                "e55afc88878a04f0"
+            ]
+        ]
+    },
+    {
+        "id": "001087ed1bb0b3ec",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor18",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 2180,
+        "wires": [
+            [
+                "d05c96171812952f"
+            ]
+        ]
+    },
+    {
+        "id": "f31893645b5fd419",
+        "type": "function",
+        "z": "4a633a38bb91c115",
+        "name": "Sensor19",
+        "func": "msg.payload = msg.payload.sensor_temperature\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 2220,
+        "wires": [
+            [
+                "ed1fa71ab54ff8f3"
+            ]
+        ]
+    },
+    {
+        "id": "737fc54cf8a09931",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor0",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0ed9d51b79fd23dc",
+        "type": "debug",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 2060,
+        "wires": []
+    },
+    {
+        "id": "f894e04beab19751",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor1",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7a0ed0bf500852cb",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor2",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5589622f1d43c1ae",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor3",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "404907384061e331",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 17,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor16",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1480,
+        "y": 2100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e55afc88878a04f0",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 18,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor17",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1480,
+        "y": 2140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d05c96171812952f",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 19,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor18",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1480,
+        "y": 2180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ed1fa71ab54ff8f3",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 20,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor19",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1480,
+        "y": 2220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4baf3330166a4119",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor4",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "eb79b3e6adcdc2a2",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor5",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e6f81767d35fac22",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor6",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "587f7b5a39e59db9",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor7",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3178cdd04f3b595b",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 9,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor8",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1760,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4855a755b0277961",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 10,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor9",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8351ef7677cdc893",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 11,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor10",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1840,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "89b55cab1c22da94",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 12,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor11",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1880,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "41fc933a2796b4ff",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 13,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor12",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1920,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "83ab6788520eacd1",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 14,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor13",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 1960,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fb65bef80a8f95d9",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 15,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor14",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 2000,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b2932abb7bcc7fbd",
+        "type": "ui_chart",
+        "z": "4a633a38bb91c115",
+        "name": "",
+        "group": "58a7b4edfef69a8f",
+        "order": 16,
+        "width": 0,
+        "height": 0,
+        "label": "Sensor15",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "00",
+        "ymax": "30",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#29638c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1500,
+        "y": 2040,
+        "wires": [
+            []
+        ]
     }
 ]
