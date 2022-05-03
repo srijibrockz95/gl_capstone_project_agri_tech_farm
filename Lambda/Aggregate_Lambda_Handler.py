@@ -29,8 +29,8 @@ def lambda_handler(event, context):
     table = boto3.resource('dynamodb').Table(tablename)
     global sensor_timestamp
 
+    # insert all records to aggregate data table
     for record in event['records']:
-
         data = base64.b64decode(record['data'])
         data = str(data, 'utf-8')
         readings = json.loads(data)
@@ -53,6 +53,7 @@ def lambda_handler(event, context):
     sensor_timestamp = ""
 
 
+# Update device
 def update_device_status(device_id):
     print("device_data status update starting for ", device_id)
     current_datetime = str(datetime.now())
