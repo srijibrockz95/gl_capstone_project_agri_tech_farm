@@ -1,6 +1,0 @@
-{
-  "mapping" : {
-    "sprinkler1" : ["sensor1","sensor2","sensor3","sensor4","sensor5"],
-    "sprinkler2" : ["sensor6","sensor7","sensor8","sensor9","sensor10"],
-    }
-}
