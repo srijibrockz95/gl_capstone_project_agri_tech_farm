@@ -9,7 +9,7 @@ from boto3.dynamodb.conditions import Key, Attr
 
 
 # first scan sprinkler table and get all data
-table_name = 'device_data'
+table_name = 'device_state'
 device_table = boto3.resource('dynamodb').Table(table_name)
 anomaly_table_name = 'anomaly_data'
 anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
@@ -43,12 +43,11 @@ def lambda_handler(event, context):
         avg_moisture = float(readings['AVG_MOISTURE'])
         max_moisture = float(readings['MAX_MOISTURE'])
         min_moisture = float(readings['MIN_MOISTURE'])
-        sensor_lat = float(readings['SENSOR_LAT'])
-        sensor_long = float(readings['SENSOR_LONG'])
+
         table.put_item(Item={'sprinkler_id': sprinklerid, 'sensor_id': sensor_id, 'sensor_timestamp': sensor_timestamp,
                              'avg_temp': str(avg_temp), 'max_temp': str(max_temp),
                              'min_temp': str(min_temp), 'avg_moisture': str(avg_moisture), 'max_moisture': str(max_moisture),
-                             'min_moisture': str(min_moisture), 'sensor_lat': str(sensor_lat), 'sensor_long': str(sensor_long)})
+                             'min_moisture': str(min_moisture)})
         print("Inserted to Aggregate table")
     sprinkler_sensor_status_off()
     sensor_timestamp = ""

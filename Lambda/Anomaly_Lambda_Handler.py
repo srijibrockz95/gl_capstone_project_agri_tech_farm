@@ -12,7 +12,7 @@ from decimal import Decimal
 # Dynamodb
 anomaly_table_name = 'anomaly_data'
 anomaly_table = boto3.resource('dynamodb').Table(anomaly_table_name)
-device_table_name = 'device_data'
+device_table_name = 'device_state'
 device_table = boto3.resource('dynamodb').Table(device_table_name)
 # owm
 owm = OWM('104bb94d45e91d4f3a7d97053708757b')
@@ -86,7 +86,7 @@ def lambda_handler(event, context):
 
                 # insert both anomaly data from sensor and owm in dynamodb
                 sensor_anomaly = {'sprinkler_id': sprinkler_id, 'sensor_id': sensor_id, 'timestamp': timestamp,
-                                  'temperature': temperature, 'moisture': moisture, 'sensor_lat': sensor_lat, 'sensor_long': sensor_long}
+                                  'temperature': temperature, 'moisture': moisture}
                 owm_anomaly = {'sensor_id': 'owm', 'timestamp': owm_timestamp,
                                'temperature': temperature, 'humidity': owm_humidity}
                 print(f"owm_anomaly: {owm_anomaly}")

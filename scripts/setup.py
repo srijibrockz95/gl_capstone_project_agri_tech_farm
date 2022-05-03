@@ -77,7 +77,7 @@ def create_anomaly_data_table(dynamodb):
 
 def create_device_data_table(dynamodb):
     table = dynamodb.create_table(
-        TableName='device_data',
+        TableName='device_state',
         KeySchema=[
             {
                 'AttributeName': 'device_id',
