@@ -11,9 +11,10 @@ from boto3.dynamodb.conditions import Key, Attr
 app = Flask(__name__)
 
 dynamodb = boto3.resource('dynamodb', 'us-east-1')
-sprinkler_headings = ("Sprinkler", "Status", "Latitude",
+sprinkler_headings = ("S.No", "Sprinkler", "Status", "Latitude",
                       "Longitude", "Timestamp")
-sensor_headings = ("Sensor", "Status", "Latitude", "Longitude", "Timestamp")
+sensor_headings = ("S.No", "Sensor", "Status",
+                   "Latitude", "Longitude", "Timestamp")
 
 
 @app.route('/')
@@ -32,8 +33,16 @@ def get_device_data(device_type):
     response = anomaly_table.scan(
         FilterExpression=Attr('device_type').eq(device_type))
     for item in response['Items']:
-        item_tuple = (item['device_id'],
-                      item['device_status'], item['device_lat'], item['device_long'], item['device_timestamp'], )
+        if(device_type == 'sensor'):
+            sensor_name = item['device_id']
+            sensor_order = int(sensor_name[6:]) + 1
+            item_tuple = (sensor_order, sensor_name,
+                          item['device_status'], item['device_lat'], item['device_long'], item['device_timestamp'], )
+        else:
+            sprinkler_name = item['device_id']
+            sprinkler_order = int(sprinkler_name[9:])
+            item_tuple = (sprinkler_order, sprinkler_name,
+                          item['device_status'], item['device_lat'], item['device_long'], item['device_timestamp'], )
         list_data.append(item_tuple)
     tuple_data = tuple(list_data)
     return sorted(tuple_data)
