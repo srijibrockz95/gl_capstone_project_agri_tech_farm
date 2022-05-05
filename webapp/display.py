@@ -29,7 +29,7 @@ def get_device_data(device_type):
     current_time = datetime.now()
     list_data = []
     tuple_data = ()
-    anomaly_table = dynamodb.Table('device_data')
+    anomaly_table = dynamodb.Table('device_state')
     response = anomaly_table.scan(
         FilterExpression=Attr('device_type').eq(device_type))
     for item in response['Items']:
