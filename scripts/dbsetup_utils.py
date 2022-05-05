@@ -101,7 +101,7 @@ def create_device_data_table(dynamodb):
 # function to insert data into sprinkler table
 
 def insert_device_data(dynamodb):
-    table = dynamodb.Table('device_data')
+    table = dynamodb.Table('device_state')
     sprinkler_latitude = 28.5355
     sprinkler_longitude = 77.3910
     sensor_latitude = 28.5355
@@ -210,7 +210,7 @@ def create_sns(sns_client):
     topic_arn = response["TopicArn"]
     # Create email subscription
     sub_response = sns_client.subscribe(
-        TopicArn=topic_arn, Protocol="email", Endpoint="rekhacthomas@gmail.com")
+        TopicArn=topic_arn, Protocol="email", Endpoint="sand.krishnan@gmail.com")
     print(sub_response)
 
 
