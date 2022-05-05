@@ -1,4 +1,4 @@
-from config import *
+from iot_s3_config import *
 import time
 import json
 import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
