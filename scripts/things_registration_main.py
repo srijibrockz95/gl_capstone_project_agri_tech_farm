@@ -1,4 +1,4 @@
-from utils import *
+from things_registration_utils import *
 from sys import exit
 
 

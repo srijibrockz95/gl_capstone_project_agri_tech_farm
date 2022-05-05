@@ -1,5 +1,5 @@
 import boto3
-from config import *
+from iot_s3_config import *
 import json
 import glob
 import time
