@@ -25,7 +25,7 @@ THING_GROUP_BASE_ARN = "arn:aws:iot:"+IOT_CORE_REGION+":"+ACCOUNT_ID+":thinggrou
 THING_BASE_ARN = "arn:aws:iot:"+IOT_CORE_REGION+":"+ACCOUNT_ID+":thing/"
 
 # AWS IoT Core - Parameters used for the MQTT Connection
-ENDPOINT = "a1df0xo7q9cvqr-ats.iot.us-east-1.amazonaws.com"  # this will change everytime for new AWS account
+ENDPOINT = "a1df0xo7q9cvqr-ats.iot."+IOT_CORE_REGION+".amazonaws.com"  # this will change everytime for new AWS account
 PATH_TO_ROOT_CA = "../secure/ca/AmazonRootCA1.pem"
 PATH_TO_CERT = "../secure/certificates"
 PATH_TO_CONFIG = "../secure/provision"
