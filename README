@@ -10,8 +10,73 @@ To make the attached code work, please follow the below mentioned steps:
 Here is an official AWS link we used to implement the above code: https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
 
 
-Setting up Dynamodb, sns, Lambdas and python flask dashboard
+-----------------------------------------------------------------------------------------------------------------------
+Setting up Kinesis Data Stream,Kinesis Delivery Stream and Kinesis Analytics App:
+-----------------------------------------------------------------------------------------------------------------------
+1.Create following IAM Roles before starting with Kinesis Flow:
+    1.IOT_TO_Kinesis
+    Permissions policies: AWSIoTThingsRegistration,AWSIoTLogging,AWSIoTRuleActions,AmazonKinesisFullAccess
+    2.FirhoseToS3
+    Permissions policies: AmazonS3FullAccess,AmazonKinesisFullAccess
+    3.kinesis-analytics-App01-us-east-1
+    Permissions policies: AmazonKinesisFullAccess,AWSLambda_FullAccess
 
+2.Create Kinesis Data Stream:
+Kinesis->Data Stream-> Create Data Stream:
+    Name:raw_data_stream
+    Data Stream Capacity:
+        Capacity mode:Provisioned
+        Provisioned shards:1
+
+3.Create  IOT Rule to transfer Data from IOT Core to Kinesis Data Stream:
+AWS IOT Core->Act->Rules->Create Rule:
+    Rule Name:IOTTTOKinesis
+    Configure SQL Statement:
+        Specify SQL Version:2016-03-23
+        SQL Statement:SELECT * FROM 'iot/agritech'
+        Rule Actions:Kinesis Stream
+            Stream Name:raw_data_stream
+            Partition key:sprinkler_id
+            IAM Role:IOT_TO_Kinesis
+        Create.
+
+4.Create Delivery Stream(Data Firehose):
+Kinesis->Delivery Streams->Create Delivery Stream:
+    Source: Amazon Kinesis Data Streams
+    Destination: Amazon S3
+    Source Settings:
+        Kinesis Data Stream: raw_data_stream
+    Delivery stream name: raw_delivery_stream
+    Destination Settings:
+        S3 bucket:capstoneagritechfarm20
+    Advanced Settings:
+        Permissions:
+            Choose existing IAM role:FirehoseToS3
+
+5. Create Kinesis SQL Legacy App:
+Kinesis->Analytics Applications->SQL applications (legacy)->Create SQL Application(Legacy)->
+    Application Name: App-01
+    Create
+
+    1.Source->Configure:
+    Source:Kinesis Data Stream
+    Kinesis Data Stream: raw_data_stream
+    IAM role for reading source stream: kinesis-analytics-App01-us-east-1
+    Discover Schema: Check for the values populating and Save Changes
+    Save Changes
+
+    2.Real-time analytics->Configure:
+        -Add the SQL Code(Refer to gl_capstone_project_agri_tech_farm/Kinesis/Kinesis_Analytics_SQL_Code for sql code) in code editor.
+        -Save and run application.
+        -After running,2 inline streams gets created:AGGREGATE_SQL_STREAM,ANOMALY_SQL_STREAM
+        -Connect streams to destination:
+        (Note:For Connecting to destination, first create the Lambda functions defined in next step. At last connect these destinations)
+            Connect Destination for AGGREGATE_SQL_STREAM:Aggregatefn
+            Connect Destination for ANOMALY_SQL_STREAM:Anomalyfn
+
+------------------------------------------------------------------------------------------------------------------
+Setting up Dynamodb, sns, Lambdas and python flask dashboard
+------------------------------------------------------------------------------------------------------------------
 Dynamodb and sns:
 1.	Update Endpoint in dbsetup_utils.py file inside the "create_sns" method with your email address
 2.	Run the file dbsetup_main.py file to create DynamoDB tables and sns
