@@ -8,3 +8,38 @@ To make the attached code work, please follow the below mentioned steps:
 	f. Move to AWS Iot core subscribe to the topic and check the output coming there. 
 
 Here is an official AWS link we used to implement the above code: https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
+
+
+Setting up Dynamodb, sns, Lambdas and python flask dashboard
+
+Dynamodb and sns:
+1.	Update Endpoint in dbsetup_utils.py file inside the "create_sns" method with your email address
+2.	Run the file dbsetup_main.py file to create DynamoDB tables and sns
+3.	Open your email inbox and confirm sns subscription.
+
+Lambdas:
+Go to AWS lambda console.
+
+Create a layer in Lambda:
+1.	Create a layer in Lambda by clicking on the Layers menu on the left side of AWS Lambda console
+2.	Give name as “pyowm”.
+3.	Upload python.zip file which can be found inside Lambda folder of solution.
+4.	Select python 3.9 as runtime and x86_64 as architecture.
+5.	Click on Create button.
+
+Create Lambdas:
+
+1.	Create a lambda function named Aggregatefn and select “Create a new role with basic lambda permissions”, Runtime – Python 3.9, Architecture – x86_64
+2.	Copy the contents of Aggregate_Lambda_Handler.py file under Lambda folder of solution to the lambda code. 
+3.	Change the lambda timeout to 3 mins under configuration tab.
+4.	Attach policies for accessing Cloud watch, DynamoDB, IoT and SNS to the newly created role.
+5.	Create another lambda function named Anomalyfn and copy the contents of Anomaly_Lambda_Handler.py file to the lambda code.
+6.	Change the lambda timeout to 3 mins under configuration tab.
+7.	Add a layer for Anomalyfn lambda and add pyown layer as custom layer
+8.	Use the same role that was created for the Aggregatefn.
+
+Python Flask Dashboard:
+	Run the file display.py under the webapp folder and go to: http://127.0.0.1:5000/ sensor and sprinkler dashboard can be seen.
+
+
+
