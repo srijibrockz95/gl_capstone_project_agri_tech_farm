@@ -191,9 +191,9 @@
         "cert": "",
         "key": "",
         "ca": "",
-        "certname": "a4a7ceeae7bb94f49ad9521f9bbd8b965128f187a586750f696d753625b44b74-certificate.pem.crt",
-        "keyname": "a4a7ceeae7bb94f49ad9521f9bbd8b965128f187a586750f696d753625b44b74-private.pem.key",
-        "caname": "AmazonRootCA1.pem",
+        "certname": "b04b548b729e48cac13c37a3ad24c0fa39912b012ec4783bcc7321522b81a710-certificate.pem.crt",
+        "keyname": "b04b548b729e48cac13c37a3ad24c0fa39912b012ec4783bcc7321522b81a710-private.pem.key",
+        "caname": "AmazonRootCA1(3).pem",
         "servername": "",
         "verifyservercert": false,
         "alpnprotocol": ""
@@ -522,7 +522,7 @@
         "operation": "Scan",
         "Statements": "",
         "RequestItems": "",
-        "TableName": "device_data",
+        "TableName": "device_state",
         "BackupName": "",
         "GlobalTableName": "",
         "ReplicationGroup": "",
@@ -569,7 +569,7 @@
                 "vt": "str"
             }
         ],
-        "repeat": "2",
+        "repeat": "4",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,

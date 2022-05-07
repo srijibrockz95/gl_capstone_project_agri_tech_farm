@@ -10,9 +10,10 @@ pip install schedule
 
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install -y nodejs build-essential
+sudo apt-get install npm
 sudo npm install -g --unsafe-perm node-red
-sudo apt npm install
+
 
 aws configure
-python3 soil_sensor_publish.py
+python3 /home/ubuntu/gl_capstone_project_agri_tech_farm/script/soil_sensor_publish.py
 
