@@ -8,7 +8,18 @@ To make the attached code work, please follow the below mentioned steps:
 	f. Move to AWS Iot core subscribe to the topic and check the output coming there. 
 
 Here is an official AWS link we used to implement the above code: https://aws.amazon.com/premiumsupport/knowledge-center/iot-core-publish-mqtt-messages-python/
-
+-----------------------------------------------------------------------------------------------------------------------
+Executing the soil_sensor simulator from the EC2 instance
+-----------------------------------------------------------------------------------------------------------------------
+1 : Launch a EC2 Ubuntu instance from the AWS console
+2 : SSH to the EC2 instance
+3 : From the home path execute "git clone https://github.com/srijibrockz95/gl_capstone_project_agri_tech_farm.git" to copy the project to the EC2 instance.
+4 : Enter the following command to provide execute permissions to the soil simulator setup script
+		chmod +x gl_capstone_project_agri_tech_farm/scripts/EC2_Simulator_setup.sh
+5 : Execute the soil simulator setup script by entering the following commands:
+		cd gl_capstone_project_agri_tech_farm/scripts
+		./EC2_Simulator_setup.sh
+		The script is interactive. Please enter “Y” for all package installation requests. You will also be requested for AWS access id and access key.
 
 -----------------------------------------------------------------------------------------------------------------------
 Setting up Kinesis Data Stream,Kinesis Delivery Stream and Kinesis Analytics App:
@@ -107,4 +118,23 @@ Python Flask Dashboard:
 	Run the file display.py under the webapp folder and go to: http://127.0.0.1:5000/ sensor and sprinkler dashboard can be seen.
 
 
+-----------------------------------------------------------------------------------------------------------------------
+Nodered dashboard
+-----------------------------------------------------------------------------------------------------------------------
+1 : 	Open a new SSH connection to the EC2 instance.
+		Enter “node-red”
+		http://<public ip>:1880/
 
+		OR
+
+		Open node-red on your local computer by entering the command “node-red”
+		http://127.0.0.1:1880
+
+2: Import the json file containing the flow into node-red. The file is attached with the project - “Final_Dashboard_Nodered”
+3: Open the “DynamoDB Scan” node and update the AWS Region, access id and secret key
+4: Login to the AWS console and create a new thing called “Nodered_Client”. Download the certificate and private key and Amazon CA certificate as well.
+5: Open the MQTT IN node and update the topic as “iot/agritech”
+		Update the server details by providing the thing end point address in the server field and setting port as 8883
+		Click on “Use TLS” and update the TLS configuration by uploading the certificate, private key and root CA.
+
+6: Open the dashboard with the link “http://127.0.0.1:1880/ui”
