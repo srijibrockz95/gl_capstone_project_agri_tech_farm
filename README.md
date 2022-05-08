@@ -93,7 +93,7 @@
                     Connect Destination for ANOMALY_SQL_STREAM:Anomalyfn
 
 ------------------------------------------------------------------------------------------------------------------
-### Setting up Dynamodb, SNS, Lambdas and python flask dashboard
+### Setting up Dynamodb, SNS, Lambdas, MQTT publish and python flask dashboard
 
 ------------------------------------------------------------------------------------------------------------------
     Dynamodb and SNS:
@@ -120,6 +120,10 @@
             6. Change the lambda timeout to 3 mins under configuration tab.
             7. Add a layer for Anomalyfn lambda and add pyown layer as custom layer
             8. Use the same role that was created for the Aggregatefn.
+        
+    MQTT publish:
+        1. Go to AWS console and open IoT Core -> Test -> MQTT test client
+        2. Subscribe to the topic weather_data
 
     Python Flask Dashboard:
 	    Run the file display.py under the webapp folder and go to: http://127.0.0.1:5000/ sensor and sprinkler dashboard can be seen.
